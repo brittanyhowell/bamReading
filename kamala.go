@@ -6,20 +6,38 @@ import (
 	"log"
 	"os"
 
+	"github.com/biogo/biogo/io/featio/bed"
 	"github.com/biogo/hts/bam"
 )
 
 func main() {
 
+	// Read index
 	ind, err := os.Open("sample5.bam.bai")
 	if err != nil {
 		log.Printf("error: could not open %s to read %v", ind, err)
 	}
 	defer ind.Close()
-
 	bai, err := bam.ReadIndex(ind)
+	h := bai.NumRefs()
+	fmt.Printf("h is h: %v \n\n", h)
 
-	fmt.Printf("ir: %v \n\n", bai)
+	// Read location bed
+	loc, err := os.Open("tiny.bed")
+	if err != nil {
+		log.Printf("error: could not open %s to read %v", loc, err)
+	}
+	defer loc.Close()
+
+	lr, err := bed.NewReader(loc, 3)
+	if err != nil {
+		log.Printf("error in NewReader: %s, %v", loc, err)
+	}
+
+	l, err := lr.Read()
+	fmt.Printf("Locations: %v\n", l)
+
+	//bam.Chunks()
 
 	f, err := os.Open("sample5.bam")
 	if err != nil {
