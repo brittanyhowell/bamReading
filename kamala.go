@@ -3,6 +3,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/biogo/hts/bam"
@@ -11,35 +12,28 @@ import (
 func main() {
 
 	f, err := os.Open("sample100.bam")
-	// if err != nil {
-	// 	return err
-	// }
-	// defer f.Close()
-
-	// var br interface {
-	// 	Read() (*sam.Record, error)
-	// }
-	// br, err = bam.NewReader(f, 0)
-	// if err != nil {
-	// 	return err
-	// }
-	// defer br.Close()
+	if err != nil {
+		log.Printf("error: could not open %s to read %v", f, err)
+	}
+	defer f.Close()
 
 	var br *bam.Reader
 	br, err = bam.NewReader(f, 0)
 	if err != nil {
-		return err
+		log.Printf("error: %s, %v", f, err)
 	}
 	defer br.Close()
 
-	// for {
-	// 	r, err := br.Read()
-	// 	if err != nil {
-	// 		if err != io.EOF {
-	// 			return err
-	// 		}
-	// 		break
-	// 	}
-	// }
-	fmt.Printf("I am complete \n")
+	r, err := br.Read()
+	if err != nil {
+		log.Printf("error: %s, %v", r, err)
+	}
+
+	hat := r.Cigar
+
+	fmt.Printf("hat: %v \n\n", hat)
+
+	//fmt.Printf("BR: %v \n\n", br)
+	//fmt.Printf("R: %v \n \n", r)
+
 }
