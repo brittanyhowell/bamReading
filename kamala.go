@@ -11,7 +11,17 @@ import (
 
 func main() {
 
-	f, err := os.Open("sample100.bam")
+	ind, err := os.Open("sample5.bam.bai")
+	if err != nil {
+		log.Printf("error: could not open %s to read %v", ind, err)
+	}
+	defer ind.Close()
+
+	bai, err := bam.ReadIndex(ind)
+
+	fmt.Printf("ir: %v \n\n", bai)
+
+	f, err := os.Open("sample5.bam")
 	if err != nil {
 		log.Printf("error: could not open %s to read %v", f, err)
 	}
@@ -20,7 +30,7 @@ func main() {
 	var br *bam.Reader
 	br, err = bam.NewReader(f, 0)
 	if err != nil {
-		log.Printf("error: %s, %v", f, err)
+		log.Printf("error: %s, %v", br, err)
 	}
 	defer br.Close()
 
