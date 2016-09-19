@@ -31,6 +31,11 @@ const (
 	refEnd   = 45
 )
 
+type costPos struct {
+	ref, query int
+	cost       float64
+}
+
 func main() {
 
 	// Read index
@@ -72,6 +77,12 @@ func main() {
 		log.Printf("error in NewReader: %s, %v", loc, err)
 	}
 
+	// helpful traits
+	// cost := [...]float64{
+	// 	sam.CigarDeletion: -1,
+	// 	sam.CigarSkipped:  -1,
+	// }
+
 	fsc := featio.NewScanner(lr)
 	for fsc.Next() {
 		f := fsc.Feat().(*bed.Bed3)
@@ -84,16 +95,26 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		// var (
+		// 	scores []costPos
+		// 	ref    = i.Record().Start()
+		// 	query  int
+		// )
 		for i.Next() {
 			//	fmt.Println(i.Record())
 			// fmt.Printf("Start: %v End: %v \n", i.Record().Start()+1, i.Record().End()+1)
 			fmt.Printf("cigar: %v\n", i.Record().Cigar)
+
+			//fmt.Printf("scores: %v, ref: %v, query: %v, cost: %v \n", scores, ref, query, cost)
+			// scores = append(scores, costPos{
+			// 	ref:   ref,
+			// 	query: query,
+			// 	cost:  cost[],
+			// })
+
 			//cs := i.Record().Cigar
-			t := i.Record().Pos
 
-			fmt.Printf("Start position: %v \n", t)
-
-			fmt.Printf("%q overlaps reference by %d letters\n", i.Record().Name, Overlap(i.Record(), i.Record().Start(), i.Record().Start()+i.Record().Len()))
+			// fmt.Printf("%q overlaps reference by %d letters\n", i.Record().Name, Overlap(i.Record(), i.Record().Start(), i.Record().Start()+i.Record().Len()))
 		}
 		err = i.Close()
 		if err != nil {
@@ -107,22 +128,22 @@ func main() {
 
 }
 
-func Overlap(r *sam.Record, start, end int) int {
-	var overlap int
-	pos := r.Pos
-	for _, co := range r.Cigar {
-		t := co.Type()
-		con := t.Consumes()
-		fmt.Printf("Consumes: %+v\n", con)
-		lr := co.Len() * con.Reference
-		if con.Query == con.Reference {
-			o := min(pos+lr, end) - max(pos, start)
-			if o > 0 {
-				overlap += o
-			}
-		}
-		pos += lr
-	}
+// func Overlap(r *sam.Record, start, end int) int {
+// 	var overlap int
+// 	pos := r.Pos
+// 	for _, co := range r.Cigar {
+// 		t := co.Type()
+// 		con := t.Consumes()
+// 		fmt.Printf("Consumes: %v\n", con)
+// 		lr := co.Len() * con.Reference
+// 		if con.Query == con.Reference {
+// 			o := min(pos+lr, end) - max(pos, start)
+// 			if o > 0 {
+// 				overlap += o
+// 			}
+// 		}
+// 		pos += lr
+// 	}
 
-	return overlap
-}
+// 	return overlap
+// }
