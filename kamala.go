@@ -12,20 +12,6 @@ import (
 	"github.com/biogo/hts/sam"
 )
 
-func min(a, b int) int {
-	if a > b {
-		return b
-	}
-	return a
-}
-
-func max(a, b int) int {
-	if a < b {
-		return b
-	}
-	return a
-}
-
 const (
 	refStart = 0
 	refEnd   = 45
@@ -77,12 +63,6 @@ func main() {
 		log.Printf("error in NewReader: %s, %v", loc, err)
 	}
 
-	// helpful traits
-	// cost := [...]float64{
-	// 	sam.CigarDeletion: -1,
-	// 	sam.CigarSkipped:  -1,
-	// }
-
 	fsc := featio.NewScanner(lr)
 	for fsc.Next() {
 		f := fsc.Feat().(*bed.Bed3)
@@ -95,26 +75,33 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		// var (
-		// 	scores []costPos
-		// 	ref    = i.Record().Start()
-		// 	query  int
-		// )
+
 		for i.Next() {
-			//	fmt.Println(i.Record())
-			// fmt.Printf("Start: %v End: %v \n", i.Record().Start()+1, i.Record().End()+1)
-			fmt.Printf("cigar: %v\n", i.Record().Cigar)
 
-			//fmt.Printf("scores: %v, ref: %v, query: %v, cost: %v \n", scores, ref, query, cost)
-			// scores = append(scores, costPos{
-			// 	ref:   ref,
-			// 	query: query,
-			// 	cost:  cost[],
-			// })
+			r := i.Record()
 
-			//cs := i.Record().Cigar
+			fmt.Printf("Start chunk: %v, end chunk: %v \n", f.Start(), f.End())
+			fmt.Printf("Start record: %v, end record: %v \n", r.Start(), r.End())
+			o := Overlaps(f.Start(), f.End(), r)
+			if o == true {
+				fmt.Printf("in chunk? %v \n", o)
+			}
+			if o == false {
+				fmt.Printf("not in chunk, exiting, %v \n", o)
+				continue
+			}
 
-			// fmt.Printf("%q overlaps reference by %d letters\n", i.Record().Name, Overlap(i.Record(), i.Record().Start(), i.Record().Start()+i.Record().Len()))
+			var hasDel bool
+			for _, co := range r.Cigar {
+				switch co.Type() {
+				case sam.CigarSkipped, sam.CigarDeletion:
+					hasDel = true
+				}
+			}
+			if hasDel == true {
+				fmt.Printf("Possible splice: %s, chromosome: %v start: %v, end: %v, length: %v \n", r.Name, f.Chrom, r.Pos, r.Pos+r.Len(), r.Len())
+			}
+			//fmt.Println(r.Cigar, hasDel)
 		}
 		err = i.Close()
 		if err != nil {
@@ -127,23 +114,6 @@ func main() {
 	}
 
 }
-
-// func Overlap(r *sam.Record, start, end int) int {
-// 	var overlap int
-// 	pos := r.Pos
-// 	for _, co := range r.Cigar {
-// 		t := co.Type()
-// 		con := t.Consumes()
-// 		fmt.Printf("Consumes: %v\n", con)
-// 		lr := co.Len() * con.Reference
-// 		if con.Query == con.Reference {
-// 			o := min(pos+lr, end) - max(pos, start)
-// 			if o > 0 {
-// 				overlap += o
-// 			}
-// 		}
-// 		pos += lr
-// 	}
-
-// 	return overlap
-// }
+func Overlaps(start int, end int, r *sam.Record) bool {
+	return start < r.End()-50 && end > r.Start()+50
+}
