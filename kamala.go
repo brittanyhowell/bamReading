@@ -61,7 +61,12 @@ func main() {
 		f := fsc.Feat().(*bed.Bed3)
 		fmt.Printf("\nStart L1 interval: %v, end L1 interval: %v \n", f.Start(), f.End())
 		// set chunks
+
 		chunks, err := bai.Chunks(refs[f.Chrom], f.Start(), f.End())
+		if err != nil {
+			fmt.Println(chunks, err)
+			continue
+		}
 
 		i, err := bam.NewIterator(br, chunks)
 		if err != nil {
