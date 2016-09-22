@@ -2,6 +2,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -13,10 +14,22 @@ import (
 	"github.com/biogo/hts/sam"
 )
 
+var (
+	index   string
+	bamFile string
+	bedFile string
+	outPath string
+)
+
 func main() {
+	flag.StringVar(&index, "index", "", "name index file")
+	flag.StringVar(&bamFile, "bam", "", "name bam file")
+	flag.StringVar(&bedFile, "intervalsBed", "", "BED3 of required intervals")
+	flag.StringVar(&outPath, "outPath", "", "path to output dir")
+	flag.Parse()
 
 	// Read index
-	ind, err := os.Open("sample5Change.bam.bai")
+	ind, err := os.Open(index)
 	if err != nil {
 		log.Printf("error: could not open %s to read %v", ind, err)
 	}
@@ -25,7 +38,7 @@ func main() {
 	h := bai.NumRefs()
 
 	// Read bam
-	f, err := os.Open("sample5Change.bam")
+	f, err := os.Open(bamFile)
 	if err != nil {
 		log.Printf("error: could not open %s to read %v", f, err)
 	}
@@ -45,11 +58,19 @@ func main() {
 	}
 
 	// Read location file
-	loc, err := os.Open("tiny.bed")
+	loc, err := os.Open(bedFile)
 	if err != nil {
 		log.Printf("error: could not open %s to read %v", loc, err)
 	}
 	defer loc.Close()
+
+	// Creating a file for the output
+	file := fmt.Sprintf("%vSplitReads.bed", outPath)
+	out, err := os.Create(file)
+	if err != nil {
+		log.Fatalf("failed to create %s: %v", file, err)
+	}
+	defer out.Close()
 
 	lr, err := bed.NewReader(loc, 3)
 	if err != nil {
@@ -80,9 +101,9 @@ func main() {
 			fmt.Printf("Start record: %v, end record: %v \n", r.Start(), r.End())
 			// check overlap is significant
 			if overlaps(r, f) {
-				fmt.Printf("in interval \n")
+				//	fmt.Printf("in interval \n")
 			} else {
-				fmt.Printf("not in interval, skipping\n")
+				//	fmt.Printf("not in interval, skipping\n")
 				continue
 			}
 
@@ -95,6 +116,7 @@ func main() {
 			}
 			if hasDel {
 				fmt.Printf("Possible splice: %s, chromosome: %v start: %v, end: %v, length: %v \n", r.Name, f.Chrom, r.Pos, r.Pos+r.Len(), r.Len())
+				fmt.Fprintf(out, "%s \t %d \t %d \n", f.Chrom, r.Pos, r.Pos+r.Len())
 			}
 
 		}
