@@ -172,19 +172,19 @@ func overlaps(r *sam.Record, f feat.Feature) bool {
 	return r.Start() > f.Start() && r.End() < f.End()
 }
 
-func min(a, b int) int {
-	if a > b {
-		return b
-	}
-	return a
-}
+// func min(a, b int) int {
+// 	if a > b {
+// 		return b
+// 	}
+// 	return a
+// }
 
-func max(a, b int) int {
-	if a < b {
-		return b
-	}
-	return a
-}
+// func max(a, b int) int {
+// 	if a < b {
+// 		return b
+// 	}
+// 	return a
+// }
 
 // func split(r *sam.Record, start, end int) int {
 
