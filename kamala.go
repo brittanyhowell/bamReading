@@ -98,7 +98,7 @@ func main() {
 
 			r := i.Record()
 
-			fmt.Printf("Start record: %v, end record: %v \n", r.Start(), r.End())
+			//		fmt.Printf("Start record: %v, end record: %v \n", r.Start(), r.End())
 			// check overlap is significant
 			if overlaps(r, f) {
 				//	fmt.Printf("in interval \n")
@@ -116,7 +116,7 @@ func main() {
 			}
 			if hasDel {
 				fmt.Printf("Possible splice: %s, chromosome: %v start: %v, end: %v, length: %v \n", r.Name, f.Chrom, r.Pos, r.Pos+r.Len(), r.Len())
-				fmt.Fprintf(out, "%s \t %d \t %d \n", f.Chrom, r.Pos, r.Pos+r.Len())
+				fmt.Fprintf(out, "%s \t %d \t %d \t %s\n", f.Chrom, r.Pos, r.Pos+r.Len(), r.Cigar)
 			}
 
 		}
