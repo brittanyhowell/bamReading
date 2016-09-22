@@ -19,6 +19,7 @@ var (
 	bamFile string
 	bedFile string
 	outPath string
+	outName string
 )
 
 func main() {
@@ -26,6 +27,7 @@ func main() {
 	flag.StringVar(&bamFile, "bam", "", "name bam file")
 	flag.StringVar(&bedFile, "intervalsBed", "", "BED3 of required intervals")
 	flag.StringVar(&outPath, "outPath", "", "path to output dir")
+	flag.StringVar(&outName, "outName", "", "out file name")
 	flag.Parse()
 
 	// Read index
@@ -65,7 +67,7 @@ func main() {
 	defer loc.Close()
 
 	// Creating a file for the output
-	file := fmt.Sprintf("%vSplitReads.bed", outPath)
+	file := fmt.Sprintf("%v%v", outPath, outName)
 	out, err := os.Create(file)
 	if err != nil {
 		log.Fatalf("failed to create %s: %v", file, err)
@@ -80,7 +82,7 @@ func main() {
 	fsc := featio.NewScanner(lr)
 	for fsc.Next() {
 		f := fsc.Feat().(*bed.Bed3)
-		fmt.Printf("\nStart L1 interval: %v, end L1 interval: %v \n", f.Start(), f.End())
+		//	fmt.Printf("Start L1 interval: %v, end L1 interval: %v \n", f.Start(), f.End())
 		// set chunks
 
 		chunks, err := bai.Chunks(refs[f.Chrom], f.Start(), f.End())
@@ -107,17 +109,51 @@ func main() {
 				continue
 			}
 
-			var hasDel bool
+			// var hasDel bool
+			var gapLen, overlap, extra int
+
 			for _, co := range r.Cigar {
+				pos := r.Pos
+				t := co.Type()
+				con := t.Consumes()
+				gapLen = co.Len() * con.Reference
+
+				if con.Query == con.Reference {
+					o := min(pos+gapLen, r.End()) - max(pos, r.Start())
+					if o > 0 {
+						overlap += o
+					}
+				}
+				overlap += extra
+				extra = 0
 				switch co.Type() {
 				case sam.CigarSkipped, sam.CigarDeletion:
-					hasDel = true
+
+					startInL1 := r.Start() - f.Start()
+					//	endInL1 := startInL1 + r.Len()
+					// fmt.Printf("Read position: %v length of gap,: %v \n", overlap, gapLen)
+					// fmt.Printf("%s \t %d \t %d \t %s\n", f.Chrom, startInL1, endInL1, r.Cigar)
+					// fmt.Printf("Start L1 interval: %v, end L1 interval: %v \n", f.Start(), f.End())
+					fmt.Printf("L1: %v:%v-%v \tPossible splice: Start: %v \tEnd: %v \tLength: %v\n", f.Chrom, f.Start(), f.End(), startInL1+overlap, startInL1+overlap+gapLen, gapLen)
+					startGap := startInL1 + overlap
+					endGap := startInL1 + overlap + gapLen
+					if gapLen > 4 && gapLen < 2000 {
+						fmt.Fprintf(out, "%v \t %v \t %v \t %v \t %v \t %v\n", f.Chrom, f.Start(), f.End(), startGap, endGap, gapLen)
+					}
+					extra = gapLen
 				}
 			}
-			if hasDel {
-				fmt.Printf("Possible splice: %s, chromosome: %v start: %v, end: %v, length: %v \n", r.Name, f.Chrom, r.Pos, r.Pos+r.Len(), r.Len())
-				fmt.Fprintf(out, "%s \t %d \t %d \t %s\n", f.Chrom, r.Pos, r.Pos+r.Len(), r.Cigar)
-			}
+			// if hasDel {
+
+			// fmt.Printf("f%v\n", f.Chrom)
+			//fmt.Printf("Possible splice: %s, chromosome: %v start: %v, end: %v, length: %v \n", r.Name, f.Chrom, r.Pos, r.Pos+r.Len(), r.Len())
+			//if endInL1 < 8000 && startInL1 > 0 {
+			//fmt.Println(r.Cigar)
+
+			// fmt.Printf("Possible splice: %s, chromosome: %v start: %v, end: %v, length: %v \n", r.Name, f.Chrom, startInL1, endInL1, r.Len())
+			// fmt.Fprintf(out, "%s \t %d \t %d \t %s\n", f.Chrom, startInL1, endInL1, r.Cigar)
+			//}
+			// }
 
 		}
 		err = i.Close()
@@ -132,5 +168,40 @@ func main() {
 
 }
 func overlaps(r *sam.Record, f feat.Feature) bool {
-	return f.Start() < r.End()-50 && f.End() > r.Start()+50
+	// return f.Start() < r.End()-50 && f.End() > r.Start()+50
+	return r.Start() > f.Start() && r.End() < f.End()
 }
+
+func min(a, b int) int {
+	if a > b {
+		return b
+	}
+	return a
+}
+
+func max(a, b int) int {
+	if a < b {
+		return b
+	}
+	return a
+}
+
+// func split(r *sam.Record, start, end int) int {
+
+// 	var overlap int
+// 	pos := r.Pos
+// 	for _, co := range r.Cigar {
+// 		t := co.Type()
+// 		con := t.Consumes()
+// 		lr := co.Len() * con.Reference
+// 		if con.Query == con.Reference {
+// 			o := min(pos+lr, end) - max(pos, start)
+// 			if o > 0 {
+// 				overlap += o
+// 			}
+// 		}
+// 		pos += lr
+// 	}
+
+// 	return overlap
+// }
