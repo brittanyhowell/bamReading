@@ -134,11 +134,11 @@ func main() {
 					// fmt.Printf("Read position: %v length of gap,: %v \n", overlap, gapLen)
 					// fmt.Printf("%s \t %d \t %d \t %s\n", f.Chrom, startInL1, endInL1, r.Cigar)
 					// fmt.Printf("Start L1 interval: %v, end L1 interval: %v \n", f.Start(), f.End())
-					fmt.Printf("L1: %v:%v-%v \tPossible splice: Start: %v \tEnd: %v \tLength: %v\n", f.Chrom, f.Start(), f.End(), startInL1+overlap, startInL1+overlap+gapLen, gapLen)
+					fmt.Printf("Possible splice: %v \tL1: %v:%v-%v \t Start: %v \tEnd: %v \tLength: %v\n", r.Name, f.Chrom, f.Start(), f.End(), startInL1+overlap, startInL1+overlap+gapLen, gapLen)
 					startGap := startInL1 + overlap
 					endGap := startInL1 + overlap + gapLen
 					if gapLen > 4 && gapLen < 2000 {
-						fmt.Fprintf(out, "%v \t %v \t %v \t %v \t %v \t %v\n", f.Chrom, f.Start(), f.End(), startGap, endGap, gapLen)
+						fmt.Fprintf(out, "%v \t%v \t %v \t %v \t %v \t %v \t %v \t %v \t %v\n", r.Name, f.Chrom, f.Start()+startGap, f.Start()+endGap, startGap, endGap, gapLen, r.Cigar, r.Flags)
 					}
 					extra = gapLen
 				}
@@ -172,19 +172,19 @@ func overlaps(r *sam.Record, f feat.Feature) bool {
 	return r.Start() > f.Start() && r.End() < f.End()
 }
 
-// func min(a, b int) int {
-// 	if a > b {
-// 		return b
-// 	}
-// 	return a
-// }
+func min(a, b int) int {
+	if a > b {
+		return b
+	}
+	return a
+}
 
-// func max(a, b int) int {
-// 	if a < b {
-// 		return b
-// 	}
-// 	return a
-// }
+func max(a, b int) int {
+	if a < b {
+		return b
+	}
+	return a
+}
 
 // func split(r *sam.Record, start, end int) int {
 
