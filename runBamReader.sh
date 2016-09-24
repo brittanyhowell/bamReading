@@ -8,10 +8,11 @@ index="Mut-F2-Rep1_CGTACG_L007.STAR.10.45.Aligned.sortedByCoord.out.bam.bai"
 bam="Mut-F2-Rep1_CGTACG_L007.STAR.10.45.Aligned.sortedByCoord.out.bam"
 
 intDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/Data/L1Location
+# intervalsBed="ClusActiveL1s.bed"
 intervalsBed="ClusAllL1s.bed"
 
 outDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/Data/BAMs/Split/
-outFile="gapInReadShortWithDetail.bed"
+outFile="gapInReadCigar.bed"
 
 # WkDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/bamReading/Scripts
 # index="sample5Change.bam.bai"
