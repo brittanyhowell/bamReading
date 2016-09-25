@@ -26,10 +26,10 @@ intervals <- IRanges(start = start, end = end)
 
 #plot(coverage(intervals), type = "l", xlab = "position in L1", ylab = "number of instances", main = "Location of gaps within reads with splits located entirely within L1s")
 
-plotRanges <- function(x, xlim = x, main = "Gaps in split reads",
-                          col = "black", sep = 0.5, ...)
+plotRanges <- function(x, xlim = x, main = args[3],
+                          col = "black", sep = .1, ...)
    {
-  height <- 1
+  height <- .2
   if (is(xlim, "Ranges"))
     xlim <- c(min(start(xlim)), max(end(xlim)))
     bins <- disjointBins(IRanges(start(x), end(x) + 1))
