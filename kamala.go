@@ -82,9 +82,8 @@ func main() {
 	fsc := featio.NewScanner(lr)
 	for fsc.Next() {
 		f := fsc.Feat().(*bed.Bed3)
-		//	fmt.Printf("Start L1 interval: %v, end L1 interval: %v \n", f.Start(), f.End())
-		// set chunks
 
+		// set chunks
 		chunks, err := bai.Chunks(refs[f.Chrom], f.Start(), f.End())
 		if err != nil {
 			fmt.Println(chunks, err)
@@ -97,21 +96,13 @@ func main() {
 		}
 		// iterate over reads
 		for i.Next() {
-
 			r := i.Record()
-
-			//		fmt.Printf("Start record: %v, end record: %v \n", r.Start(), r.End())
-			// check overlap is significant
 			if overlaps(r, f) {
-				//	fmt.Printf("in interval \n")
 			} else {
-				//	fmt.Printf("not in interval, skipping\n")
 				continue
 			}
 
-			// var hasDel bool
 			var gapLen, overlap, extra int
-
 			for _, co := range r.Cigar {
 				pos := r.Pos
 				t := co.Type()
@@ -128,33 +119,16 @@ func main() {
 				extra = 0
 				switch co.Type() {
 				case sam.CigarSkipped, sam.CigarDeletion:
-
 					startInL1 := r.Start() - f.Start()
-					//	endInL1 := startInL1 + r.Len()
-					// fmt.Printf("Read position: %v length of gap,: %v \n", overlap, gapLen)
-					// fmt.Printf("%s \t %d \t %d \t %s\n", f.Chrom, startInL1, endInL1, r.Cigar)
-					// fmt.Printf("Start L1 interval: %v, end L1 interval: %v \n", f.Start(), f.End())
 					fmt.Printf("Possible splice: %v \tL1: %v:%v-%v \t Start: %v \tEnd: %v \tLength: %v\n", r.Name, f.Chrom, f.Start(), f.End(), startInL1+overlap, startInL1+overlap+gapLen, gapLen)
 					startGap := startInL1 + overlap
 					endGap := startInL1 + overlap + gapLen
 					if gapLen > 4 && gapLen < 2000 {
 						fmt.Fprintf(out, "%v \t%v \t %v \t %v \t %v \t %v \t %v \t %v \t %v\n", r.Name, f.Chrom, f.Start()+startGap, f.Start()+endGap, startGap, endGap, gapLen, r.Cigar, r.Flags)
 					}
-					extra = gapLen
+					extra = gapLen // adds to overlap
 				}
 			}
-			// if hasDel {
-
-			// fmt.Printf("f%v\n", f.Chrom)
-			//fmt.Printf("Possible splice: %s, chromosome: %v start: %v, end: %v, length: %v \n", r.Name, f.Chrom, r.Pos, r.Pos+r.Len(), r.Len())
-			//if endInL1 < 8000 && startInL1 > 0 {
-			//fmt.Println(r.Cigar)
-
-			// fmt.Printf("Possible splice: %s, chromosome: %v start: %v, end: %v, length: %v \n", r.Name, f.Chrom, startInL1, endInL1, r.Len())
-			// fmt.Fprintf(out, "%s \t %d \t %d \t %s\n", f.Chrom, startInL1, endInL1, r.Cigar)
-			//}
-			// }
-
 		}
 		err = i.Close()
 		if err != nil {
@@ -165,10 +139,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("bed scan failed: %v", err)
 	}
-
 }
+
 func overlaps(r *sam.Record, f feat.Feature) bool {
-	// return f.Start() < r.End()-50 && f.End() > r.Start()+50
+	// read must be entirely within L1 interval
 	return r.Start() > f.Start() && r.End() < f.End()
 }
 
@@ -185,23 +159,3 @@ func max(a, b int) int {
 	}
 	return a
 }
-
-// func split(r *sam.Record, start, end int) int {
-
-// 	var overlap int
-// 	pos := r.Pos
-// 	for _, co := range r.Cigar {
-// 		t := co.Type()
-// 		con := t.Consumes()
-// 		lr := co.Len() * con.Reference
-// 		if con.Query == con.Reference {
-// 			o := min(pos+lr, end) - max(pos, start)
-// 			if o > 0 {
-// 				overlap += o
-// 			}
-// 		}
-// 		pos += lr
-// 	}
-
-// 	return overlap
-// }
