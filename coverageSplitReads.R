@@ -9,7 +9,7 @@ if (length(args)==0) {
 }
 
 
-setwd("~/Documents/University/Honours_2016/Project/Data/BAMs/Split/")
+#setwd("~/Documents/University/Honours_2016/Project/Data/BAMs/Split/")
 # load IRanges library
 library(IRanges)
 
