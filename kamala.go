@@ -102,8 +102,9 @@ func main() {
 				continue
 			}
 
-			var gapLen, overlap, extra int
+			var gapLen, overlap, extra, readOverlap int
 			for _, co := range r.Cigar {
+
 				pos := r.Pos
 				t := co.Type()
 				con := t.Consumes()
@@ -113,19 +114,25 @@ func main() {
 					o := min(pos+gapLen, r.End()) - max(pos, r.Start())
 					if o > 0 {
 						overlap += o
+						readOverlap += o
 					}
 				}
 				overlap += extra
 				extra = 0
 				switch co.Type() {
 				case sam.CigarSkipped, sam.CigarDeletion:
+
 					startInL1 := r.Start() - f.Start()
 					fmt.Printf("Possible splice: %v \tL1: %v:%v-%v \t Start: %v \tEnd: %v \tLength: %v\n", r.Name, f.Chrom, f.Start(), f.End(), startInL1+overlap, startInL1+overlap+gapLen, gapLen)
 					startGap := startInL1 + overlap
 					endGap := startInL1 + overlap + gapLen
-					if gapLen > 4 && gapLen < 2000 {
+					if gapLen > 4 {
 						fmt.Fprintf(out, "%v \t%v \t %v \t %v \t %v \t %v \t %v \t %v \t %v\n", r.Name, f.Chrom, f.Start()+startGap, f.Start()+endGap, startGap, endGap, gapLen, r.Cigar, r.Flags)
+
+						// fmt.Printf("\nThe read?: %v\n\nThe sequence at a position: %v, the position:  \n", r, r.Ref.String())
+						// fmt.Printf("All of the output: %v\n%v\n%v\n%v\n%v\n%v\n%v\n%v\n%v\n%v\n%v\n", r.Name, r.Ref, r.Pos, r.MapQ, r.Flags, r.Cigar, r.MateRef, r.TempLen, r.Seq, r.Qual, r.AuxFields)
 					}
+
 					extra = gapLen // adds to overlap
 				}
 			}
