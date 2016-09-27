@@ -15,9 +15,16 @@ fi
 cd ${wkDIR}
 
 for file in gapInRead*.txt; do
+
 	makeName=$(echo $file | sed 's/_/	/g' | awk '{print $2}')
-	awk '{print $7}' $file > "${outDIR}/${makeName}_5.txt"
-	awk '{print $8}' $file > "${outDIR}/${makeName}_3.txt"	
+
+	cat ${file} | awk '{print $7 "\t" $8} '| sed -e 's/./&      /g' | awk '{print $1 $2 "\t" $3}' > "${outDIR}/${makeName}.txt"
+		
 done
 
 echo "complete"
+
+
+
+
+
