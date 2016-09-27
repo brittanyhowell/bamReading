@@ -10,7 +10,7 @@ intDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/Data/L1Lo
 # intervalsBed="ClusActiveL1s.bed"
 intervalsBed="ClusAllL1s.bed"
 
-outDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/bamReading/Split/Tues/
+outDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/bamReading/Split/limitedGap/
 # outFile="gapInRead_Mut_F5_Rep1_10_45.txt"
 
 # # testDIRs
@@ -31,7 +31,6 @@ cd ${bamDIR}
 bamFiles=$(ls *.bam.bai)
 
 for bam in $bamFiles ; do
-
 	bamRecord=${bam%.bai}
 # The go code
 # go run bamReader.go -index=${bamDIR}/${index} -bam=${bamDIR}/${bam} -intervalsBed=${intDIR}/${intervalsBed} -outPath=${outDIR} -outName=${outFile}
@@ -40,17 +39,32 @@ for bam in $bamFiles ; do
  go run bamReader.go -index=${bamDIR}/${bam} -bam=${bamDIR}/${bamRecord} -intervalsBed=${intDIR}/${intervalsBed} -outPath=${outDIR} -outName=gapInRead_${bamRecord%.STAR.10.45.bam}.txt
 done 
 
+echo "finished making tables"
+
+## R file variables
+tableDIR=${outDIR}
+plotDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/bamReading/plots/full
 
 
-# ## R file variables
-# tableDIR=${outDIR}
-# gapTable=${outFile}
-# plotDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/bamReading/plots
-# pdfGAP="STAR_F5Rep1_10_45.pdf"
-# plotName="STAR-F5_Rep1_10_45"
-# ## Run the R script for plotting
 
-# Rscript coverageSplitReads.R ${tableDIR}/${gapTable} ${plotDIR}/${pdfGAP} ${plotName}
-# # args 1: table name
-# # args 2: name of PDF
-# # args 3: title on plot
+cd ${outDIR}
+
+for gap in *.txt; do 
+
+	gapTable=${gap}
+	makeName=$(echo $gap | sed 's/_/	/g' | awk '{print $2}')
+	pdfGAP="${makeName}.pdf"
+	plotName="STAR-${makeName}"
+	## Run the R script for plotting
+
+# echo ${gapTable}
+# echo ${makeName}
+# echo ${pdfGAP}
+# echo ${plotName}
+# echo .
+	Rscript coverageSplitReads.R ${tableDIR}/${gapTable} ${plotDIR}/${pdfGAP} ${plotName}
+	# args 1: table name
+	# args 2: name of PDF
+	# args 3: title on plot
+
+done
