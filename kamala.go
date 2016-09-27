@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/biogo/biogo/alphabet"
 	"github.com/biogo/biogo/feat"
 	"github.com/biogo/biogo/io/featio"
 	"github.com/biogo/biogo/io/featio/bed"
@@ -123,16 +124,20 @@ func main() {
 				case sam.CigarSkipped, sam.CigarDeletion:
 
 					startInL1 := r.Start() - f.Start()
-					fmt.Printf("Possible splice: %v \tL1: %v:%v-%v \t Start: %v \tEnd: %v \tLength: %v\n", r.Name, f.Chrom, f.Start(), f.End(), startInL1+overlap, startInL1+overlap+gapLen, gapLen)
+					fmt.Printf("\n\nPossible splice: %v \tL1: %v:%v-%v \t Start: %v \tEnd: %v \tLength: %v\n", r.Name, f.Chrom, f.Start(), f.End(), startInL1+overlap, startInL1+overlap+gapLen, gapLen)
 					startGap := startInL1 + overlap
 					endGap := startInL1 + overlap + gapLen
-					if gapLen > 4 {
-						fmt.Fprintf(out, "%v \t%v \t %v \t %v \t %v \t %v \t %v \t %v \t %v\n", r.Name, f.Chrom, f.Start()+startGap, f.Start()+endGap, startGap, endGap, gapLen, r.Cigar, r.Flags)
+					if gapLen > 4 && gapLen < 2000 {
+						seq := r.Seq.Expand()
+						notReallyLetter := alphabet.BytesToLetters(seq)
+						letter := alphabet.Letters(notReallyLetter)
+						beginsplice := letter.Slice(readOverlap-2, readOverlap)
+						endSplice := letter.Slice(readOverlap, readOverlap+2)
+						fmt.Fprintf(out, "%v \t%v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v\n", r.Name, f.Chrom, f.Start(), f.End(), startGap, endGap, beginsplice, endSplice, gapLen, r.Cigar, r.Flags)
 
-						// fmt.Printf("\nThe read?: %v\n\nThe sequence at a position: %v, the position:  \n", r, r.Ref.String())
-						// fmt.Printf("All of the output: %v\n%v\n%v\n%v\n%v\n%v\n%v\n%v\n%v\n%v\n%v\n", r.Name, r.Ref, r.Pos, r.MapQ, r.Flags, r.Cigar, r.MateRef, r.TempLen, r.Seq, r.Qual, r.AuxFields)
+						fmt.Printf("Begin splice: %v, End splice:%v\n", beginsplice, endSplice)
+						fmt.Printf("Alignment coordinate information: %v, readOverlap: %v, Start: %v, Length: %v\n", r.Cigar, readOverlap, startGap, gapLen)
 					}
-
 					extra = gapLen // adds to overlap
 				}
 			}
