@@ -14,8 +14,8 @@ if (length(args)==0) {
 
 splices <- read.table(args[1])
 colnames(splices) <- c("five", "three" )
-monocolours <- c("grey", "grey", "darkgreen", "grey")
-dicolours <- c("grey","grey", "darkgreen", "grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey")
+monocolours <- c("darkgrey", "darkgrey", "cornflowerblue", "darkgrey")
+dicolours <- c("darkgrey","darkgrey", "cornflowerblue", "darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey","darkgrey")
 
 num <- nrow(splices)
 
