@@ -11,16 +11,23 @@ import (
 	"github.com/biogo/biogo/feat"
 	"github.com/biogo/biogo/io/featio"
 	"github.com/biogo/biogo/io/featio/bed"
+	"github.com/biogo/biogo/io/seqio"
+	"github.com/biogo/biogo/io/seqio/fasta"
+	"github.com/biogo/biogo/seq/linear"
 	"github.com/biogo/hts/bam"
 	"github.com/biogo/hts/sam"
 )
 
 var (
-	index   string
-	bamFile string
-	bedFile string
-	outPath string
-	outName string
+	index      string
+	bamFile    string
+	bedFile    string
+	outPath    string
+	outName    string
+	genome     string
+	seqOutName string
+	logo5Name  string
+	logo3Name  string
 )
 
 func main() {
@@ -29,9 +36,32 @@ func main() {
 	flag.StringVar(&bedFile, "intervalsBed", "", "BED3 of required intervals")
 	flag.StringVar(&outPath, "outPath", "", "path to output dir")
 	flag.StringVar(&outName, "outName", "", "out file name")
+	flag.StringVar(&seqOutName, "seqOutName", "", "sequence containing out file name")
+	flag.StringVar(&logo5Name, "logo5Name", "", "sequence containing webLogo 5' file name")
+	flag.StringVar(&logo3Name, "logo3Name", "", "sequence containing webLogo 3' file name")
+	flag.StringVar(&genome, "refGen", "", "reference genome")
 	flag.Parse()
 
-	// Read index
+	fmt.Println("Loading genome")
+	gen, err := os.Open(genome)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v.", err)
+		os.Exit(1)
+	}
+	defer gen.Close()
+
+	in := fasta.NewReader(gen, linear.NewSeq("", nil, alphabet.DNA))
+	sc := seqio.NewScanner(in)
+	AllSeqs := map[string]*linear.Seq{}
+
+	for sc.Next() {
+		s := sc.Seq().(*linear.Seq)
+		AllSeqs[s.Name()] = s
+	}
+
+	fmt.Println("Genome loaded")
+
+	// read index
 	ind, err := os.Open(index)
 	if err != nil {
 		log.Printf("error: could not open %s to read %v", ind, err)
@@ -67,11 +97,25 @@ func main() {
 	}
 	defer loc.Close()
 
-	// Creating a file for the output
+	// Creating files for the output
 	file := fmt.Sprintf("%v%v", outPath, outName)
 	out, err := os.Create(file)
 	if err != nil {
 		log.Fatalf("failed to create %s: %v", file, err)
+	}
+	defer out.Close()
+
+	seqFile := fmt.Sprintf("%v%v", outPath, seqOutName)
+	seqOut, err := os.Create(seqFile)
+	if err != nil {
+		log.Fatalf("failed to create %s: %v", file, err)
+	}
+	defer seqOut.Close()
+
+	webLogoFile := fmt.Sprintf("%v%v", outPath, logoName)
+	out, err := os.Create(file)
+	if err != nil {
+		log.Fatalf("failed to create %s: %v", webLogoFile, err)
 	}
 	defer out.Close()
 
@@ -100,6 +144,7 @@ func main() {
 			r := i.Record()
 			if overlaps(r, f) {
 			} else {
+
 				continue
 			}
 
@@ -124,23 +169,66 @@ func main() {
 				case sam.CigarSkipped, sam.CigarDeletion:
 
 					startInL1 := r.Start() - f.Start()
-					fmt.Printf("\n\nPossible splice: %v \tL1: %v:%v-%v \t Start: %v \tEnd: %v \tLength: %v\n", r.Name, f.Chrom, f.Start(), f.End(), startInL1+overlap, startInL1+overlap+gapLen, gapLen)
+					fmt.Printf("Possible splice: \tL1: %v:%v-%v \t Start: %v \tEnd: %v \tLength: %v \t%v\n",
+						f.Chrom, f.Start(), f.End(), startInL1+overlap, startInL1+overlap+gapLen, gapLen, r.Cigar)
 					startGap := startInL1 + overlap
 					endGap := startInL1 + overlap + gapLen
-					if gapLen > 4 && gapLen < 2000 {
+					if gapLen > 4 && gapLen < 6000 {
 						seq := r.Seq.Expand()
-						notReallyLetter := alphabet.BytesToLetters(seq)
-						letter := alphabet.Letters(notReallyLetter)
+						letter := alphabet.Letters(alphabet.BytesToLetters(seq))
 						beginsplice := letter.Slice(readOverlap-2, readOverlap)
 						endSplice := letter.Slice(readOverlap, readOverlap+2)
-						fmt.Fprintf(out, "%v \t%v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v\n", r.Name, f.Chrom, f.Start(), f.End(), startGap, endGap, beginsplice, endSplice, gapLen, r.Cigar, r.Flags)
 
-						fmt.Printf("Begin splice: %v, End splice:%v\n", beginsplice, endSplice)
-						fmt.Printf("Alignment coordinate information: %v, readOverlap: %v, Start: %v, Length: %v\n", r.Cigar, readOverlap, startGap, gapLen)
+						//
+						genStartGap := startGap + f.Start()
+						genEndGap := endGap + f.Start()
+						nucs := AllSeqs[f.Chrom].Slice()
+						fiveSJ := nucs.Slice(genStartGap-3, genStartGap+3)
+						threeSJ := nucs.Slice(genEndGap-3, genEndGap+3)
+						fmt.Fprintf(out, "%v \t%v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v\n",
+							r.Name,      // read name
+							f.Chrom,     // chromosome of L1
+							f.Start(),   // L1 genomic start
+							f.End(),     // L1 genomic end
+							startGap,    // start position of gap relative to L1
+							endGap,      // end position of gap relative to L1
+							fiveSJ,      // letters at begin of splice
+							threeSJ,     // nucs at end
+							beginsplice, // two nucs in read at 5' end of SJ
+							endSplice,   // two nucs in reads at 3' end of SJ
+							gapLen,      // length of gap
+							r.Cigar,     // cigar string of read
+							r.Flags,     // flags relative to read
+						)
+
+						fmt.Fprintf(seqOut, "%v \t%v \t %v \t %v \n",
+							f.Chrom,   // chromosome of L1
+							f.Start(), // L1 genomic start
+							f.End(),   // L1 genomic end
+							nucs.Slice(genStartGap-3, genEndGap+3), //
+						)
+
+						fmt.Fprintf(logo5Name, ">Logo-5'%v:%v-%v\n%v",
+							f.Chrom,  // chromosome name
+							startGap, // start position of gap relative to L1
+							endGap,   // end position of gap relative to L1
+							fiveSJ,   // letters at begin of splice
+						)
+
+						fmt.Fprintf(logo3Name, ">Logo-5'%v:%v-%v\n%v",
+							f.Chrom,  // chromosome name
+							startGap, // start position of gap relative to L1
+							endGap,   // end position of gap relative to L1
+							threeSJ,  // letters at begin of splice
+						)
+
+						fmt.Printf("Begin intron: %v, End intron: %v \t %v \t %v\n", nucs.Slice(genStartGap, genStartGap+2), threeSJ, beginsplice, endSplice)
+						//fmt.Printf("Alignment coordinate information: %v, readOverlap: %v, Start: %v, Length: %v\n", r.Cigar, readOverlap, startGap, gapLen)
 					}
 					extra = gapLen // adds to overlap
 				}
 			}
+
 		}
 		err = i.Close()
 		if err != nil {
