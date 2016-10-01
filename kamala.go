@@ -108,16 +108,25 @@ func main() {
 	seqFile := fmt.Sprintf("%v%v", outPath, seqOutName)
 	seqOut, err := os.Create(seqFile)
 	if err != nil {
-		log.Fatalf("failed to create %s: %v", file, err)
+		log.Fatalf("failed to create %s: %v", seqFile, err)
 	}
 	defer seqOut.Close()
 
-	webLogoFile := fmt.Sprintf("%v%v", outPath, logoName)
-	out, err := os.Create(file)
+	threeFile := fmt.Sprintf("%v%v", outPath, logo3Name)
+	logo3out, err := os.Create(threeFile)
 	if err != nil {
-		log.Fatalf("failed to create %s: %v", webLogoFile, err)
+		log.Fatalf("failed to create %s: %v", threeFile, err)
 	}
 	defer out.Close()
+
+	fiveFile := fmt.Sprintf("%v%v", outPath, logo5Name)
+	logo5out, err := os.Create(fiveFile)
+	if err != nil {
+		log.Fatalf("failed to create %s: %v", fiveFile, err)
+	}
+	defer out.Close()
+
+	//// Commence reading
 
 	lr, err := bed.NewReader(loc, 3)
 	if err != nil {
@@ -208,20 +217,26 @@ func main() {
 							nucs.Slice(genStartGap-3, genEndGap+3), //
 						)
 
-						fmt.Fprintf(logo5Name, ">Logo-5'%v:%v-%v\n%v",
+						fmt.Fprintf(logo5out, ">Logo-5'%v:%v-%v\n%v",
 							f.Chrom,  // chromosome name
 							startGap, // start position of gap relative to L1
 							endGap,   // end position of gap relative to L1
 							fiveSJ,   // letters at begin of splice
 						)
 
-						fmt.Fprintf(logo3Name, ">Logo-5'%v:%v-%v\n%v",
+						fmt.Fprintf(logo3out, ">Logo-3'%v:%v-%v\n%v\n",
 							f.Chrom,  // chromosome name
 							startGap, // start position of gap relative to L1
 							endGap,   // end position of gap relative to L1
 							threeSJ,  // letters at begin of splice
 						)
 
+						fmt.Printf(">Logo-3'%v:%v-%v\n%v\n",
+							f.Chrom,  // chromosome name
+							startGap, // start position of gap relative to L1
+							endGap,   // end position of gap relative to L1
+							threeSJ,  // letters at begin of splice
+						)
 						fmt.Printf("Begin intron: %v, End intron: %v \t %v \t %v\n", nucs.Slice(genStartGap, genStartGap+2), threeSJ, beginsplice, endSplice)
 						//fmt.Printf("Alignment coordinate information: %v, readOverlap: %v, Start: %v, Length: %v\n", r.Cigar, readOverlap, startGap, gapLen)
 					}
