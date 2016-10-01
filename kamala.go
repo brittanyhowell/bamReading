@@ -58,7 +58,6 @@ func main() {
 		s := sc.Seq().(*linear.Seq)
 		AllSeqs[s.Name()] = s
 	}
-
 	fmt.Println("Genome loaded")
 
 	// read index
@@ -76,7 +75,6 @@ func main() {
 		log.Printf("error: could not open %s to read %v", f, err)
 	}
 	defer f.Close()
-
 	var br *bam.Reader
 	br, err = bam.NewReader(f, 0)
 	if err != nil {
@@ -178,17 +176,16 @@ func main() {
 				case sam.CigarSkipped, sam.CigarDeletion:
 
 					startInL1 := r.Start() - f.Start()
-					fmt.Printf("Possible splice: \tL1: %v:%v-%v \t Start: %v \tEnd: %v \tLength: %v \t%v\n",
-						f.Chrom, f.Start(), f.End(), startInL1+overlap, startInL1+overlap+gapLen, gapLen, r.Cigar)
+					//	fmt.Printf("Possible splice: \tL1: %v:%v-%v \t Start: %v \tEnd: %v \tLength: %v \t%v\n",
+					//	f.Chrom, f.Start(), f.End(), startInL1+overlap, startInL1+overlap+gapLen, gapLen, r.Cigar)
 					startGap := startInL1 + overlap
 					endGap := startInL1 + overlap + gapLen
-					if gapLen > 4 && gapLen < 6000 {
+					if gapLen > 4 && gapLen < 20000000 {
 						seq := r.Seq.Expand()
 						letter := alphabet.Letters(alphabet.BytesToLetters(seq))
 						beginsplice := letter.Slice(readOverlap-2, readOverlap)
 						endSplice := letter.Slice(readOverlap, readOverlap+2)
 
-						//
 						genStartGap := startGap + f.Start()
 						genEndGap := endGap + f.Start()
 						nucs := AllSeqs[f.Chrom].Slice()
@@ -217,7 +214,7 @@ func main() {
 							nucs.Slice(genStartGap-3, genEndGap+3), //
 						)
 
-						fmt.Fprintf(logo5out, ">Logo-5'%v:%v-%v\n%v",
+						fmt.Fprintf(logo5out, ">Logo-5'%v:%v-%v\n%v\n",
 							f.Chrom,  // chromosome name
 							startGap, // start position of gap relative to L1
 							endGap,   // end position of gap relative to L1
@@ -231,14 +228,8 @@ func main() {
 							threeSJ,  // letters at begin of splice
 						)
 
-						fmt.Printf(">Logo-3'%v:%v-%v\n%v\n",
-							f.Chrom,  // chromosome name
-							startGap, // start position of gap relative to L1
-							endGap,   // end position of gap relative to L1
-							threeSJ,  // letters at begin of splice
-						)
 						fmt.Printf("Begin intron: %v, End intron: %v \t %v \t %v\n", nucs.Slice(genStartGap, genStartGap+2), threeSJ, beginsplice, endSplice)
-						//fmt.Printf("Alignment coordinate information: %v, readOverlap: %v, Start: %v, Length: %v\n", r.Cigar, readOverlap, startGap, gapLen)
+
 					}
 					extra = gapLen // adds to overlap
 				}
