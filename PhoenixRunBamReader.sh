@@ -21,19 +21,50 @@
 # bamDIR=/data/rc003/Brittany/Alignment/mouseBAM
 
 # intDIR=/data/rc003/Brittany/Data/L1Location
-intervalsBed="ClusActiveL1s.bed"
-# intervalsBed="ClusAllL1s.bed"
+# intervalsBed="ClusActiveL1s.bed"
+# # intervalsBed="ClusAllL1s.bed"
 
 # refGenDIR=/data/rc003/Brittany/genomes
-refGen="mm10.fa"
+# refGen="mm10.fa"
 
 # outDIR=/data/rc003/Brittany/findGaps/outputGapFinding/
 
 
 
+# scriptDIR=/data/rc003/Brittany/Scriptscd ..
+# bamDIR=/data/rc003/Brittany/humanAlignment/
+# ################
+# ################
+# ###FIND INTERVALS
+# intDIR=/data/rc003/Brittany/Data/L1Location
+# intervalsBed="human_L1_ORF2_bothORF.bed"
+# # intervalsBed="ClusAllL1s.bed"
+# ################
+# ################
+
+# refGenDIR=/data/rc003/Brittany/genomes
+# refGen="hg38.fa"
+# outDIR=/data/rc003/Brittany/findGaps/Human
+
+
+scriptDIR=/data/rc003/Brittany/Scripts bamDIR=/data/rc003/Brittany/humanAlignment/ intDIR=/data/rc003/Brittany/Data/L1Location refGenDIR=/data/rc003/Brittany/genomes outDIR=/data/rc003/Brittany/findGaps/suppRuns/ 
+################
+################
+###FIND INTERVALS
+
+# intervalsBed="human_L1_bothORF.bed"
+intervalsBed="human_L1_ORF2_bothORF.bed"
+# intervalsBed="ClusAllL1s.bed"
+################
+################
+
+
+refGen="hg38.fa"
 
 
 
+
+# scriptDIR=/data/rc003/Brittany/Scripts bamDIR=/data/rc003/Brittany/Alignment/mouseBAM intDIR=/data/rc003/Brittany/Data/L1Location refGenDIR=/data/rc003/Brittany/genomes outDIR=/data/rc003/Brittany/findGaps/outputGapFinding/ sbatch test.sh Mut-F2-Rep1_CGTACG_L007.STAR.10.45.bam.bai
 
 
 
@@ -56,7 +87,7 @@ cd ${bamDIR}
 	bam=${1}
 
 outPrefix="gapInRead${bamRecord%.STAR.10.45.bam}"
-
+echo "Running for ${outPrefix}"
  	go run bamReader.go -index=${bamDIR}/${bam} -bam=${bamDIR}/${bamRecord} -intervalsBed=${intDIR}/${intervalsBed} -outPath=${outDIR} -outName=${outPrefix}.txt -seqOutName=${outPrefix}_FullIntron.txt -refGen=${refGenDIR}/${refGen} -logo5Name=${outPrefix}_5SJ.txt -logo3Name=${outPrefix}_3SJ.txt
  
 

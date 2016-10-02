@@ -28,6 +28,7 @@ var (
 	seqOutName string
 	logo5Name  string
 	logo3Name  string
+	numSplice  int
 )
 
 func main() {
@@ -135,6 +136,8 @@ func main() {
 	for fsc.Next() {
 		f := fsc.Feat().(*bed.Bed3)
 
+		fSplice := false // if element has a spliced read in it, it becomes positive
+
 		// set chunks
 		chunks, err := bai.Chunks(refs[f.Chrom], f.Start(), f.End())
 		if err != nil {
@@ -146,12 +149,13 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		// iterate over reads
 		for i.Next() {
 			r := i.Record()
 			if overlaps(r, f) {
-			} else {
 
+			} else {
 				continue
 			}
 
@@ -174,13 +178,14 @@ func main() {
 				extra = 0
 				switch co.Type() {
 				case sam.CigarSkipped, sam.CigarDeletion:
-
+					fSplice = true
 					startInL1 := r.Start() - f.Start()
 					//	fmt.Printf("Possible splice: \tL1: %v:%v-%v \t Start: %v \tEnd: %v \tLength: %v \t%v\n",
 					//	f.Chrom, f.Start(), f.End(), startInL1+overlap, startInL1+overlap+gapLen, gapLen, r.Cigar)
 					startGap := startInL1 + overlap
 					endGap := startInL1 + overlap + gapLen
-					if gapLen > 4 && gapLen < 20000000 {
+					if gapLen > 4 && gapLen < 2000 {
+
 						seq := r.Seq.Expand()
 						letter := alphabet.Letters(alphabet.BytesToLetters(seq))
 						beginsplice := letter.Slice(readOverlap-2, readOverlap)
@@ -227,24 +232,24 @@ func main() {
 							endGap,   // end position of gap relative to L1
 							threeSJ,  // letters at begin of splice
 						)
-
-						fmt.Printf("Begin intron: %v, End intron: %v \t %v \t %v\n", nucs.Slice(genStartGap, genStartGap+2), threeSJ, beginsplice, endSplice)
-
 					}
 					extra = gapLen // adds to overlap
 				}
 			}
-
 		}
 		err = i.Close()
 		if err != nil {
 			log.Fatal(err)
+		}
+		if fSplice {
+			numSplice++
 		}
 	}
 	err = fsc.Error()
 	if err != nil {
 		log.Fatalf("bed scan failed: %v", err)
 	}
+	fmt.Printf("There were %v intervals with at least one spliced read\n", numSplice)
 }
 
 func overlaps(r *sam.Record, f feat.Feature) bool {
