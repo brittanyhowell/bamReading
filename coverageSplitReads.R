@@ -9,14 +9,15 @@ if (length(args)==0) {
 }
 
 
-#setwd("~/Documents/University/Honours_2016/Project/Data/BAMs/Split/")
+setwd("~/Documents/University/Honours_2016/Project/bamReading/Split/runWithGenomeSpliceSites/Mouse/FullTable/")
 # load IRanges library
 library(IRanges)
 
 
 split <- read.table(file = args[1])
-#split <- read.table("./gapInReadCigar.bed")
-colnames(split) <- c("read name", "chromosome", "startL1", "endL1", "startGap", "endGap", "length", "cigar", "flag")
+#split <- read.table("./gapInReadMut-F2-Rep1_CGTACG_L007.txt")
+colnames(split) <- c("read name", "chromosome", "startL1", "endL1", "startGap", "endGap", "5pLong", "3pLong", "5p", "3p", "length", "cigar", "flag", "1", "2", "3", "4")
+
 
 start = split$startGap
 end = split$endGap
