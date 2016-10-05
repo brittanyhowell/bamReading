@@ -3,12 +3,13 @@
 
 
 
-wkDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/bamReading/Split/runWithGenomeSpliceSites/Human/
-inTable=${wkDIR}/Five
+wkDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/ClusterFilter/findGaps/outputGapFinding
+inTable=${wkDIR}
 
-site="Human-Five"
+site="combination"
 
-plotDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/bamReading/plots/webLogo/${site}
+plotDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/ClusterFilter/findGaps/webLogo/${site}
+
 
 
 if [ -d $plotDIR ]; then
@@ -23,15 +24,16 @@ fi
 
 
 cd ${inTable}
-for table in *.txt ; do 
+for table in *.fasta ; do 
 
-	fileName="${table%.txt}"
+	fileName="${table%.fasta}"
 
-	noGAP="$(echo $fileName | sed 's/gapInRead//g')"
+	#noGAP="$(echo $fileName | sed 's/gapInRead//g')"
+	noGAP="genome sites"
 	echo $noGAP
 
 
-	weblogo --number-interval 2 --aspect-ratio 4 -y "" --size large --title "$noGAP" --annotate '-3,-2,-1,+1,+2,+3' -W 30  -c classic --format PDF -f ${table} -U probability -o ${plotDIR}/${fileName}.pdf 
+	weblogo --number-interval 2 --aspect-ratio 4 -y "" --size large --title "$noGAP" --annotate '-2,-1,+1,+2' -W 30  -c classic --format PDF -f ${table} -U probability -o ${plotDIR}/${fileName}.pdf 
 done
 
 echo "complete"
