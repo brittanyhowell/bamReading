@@ -1,12 +1,13 @@
 #!/bin/bash
 # Runs bamReader.go
-## runBamReader.sh
+## phoenixRunBamReader.sh
+## Script is the batch script which is called by "runPhoenixRunBamReader" and hence the filepath variables need to be declared not here, but in the call. They are presented here still only for ease. 
 ## invoked by: scriptDIR=/data/rc003/Brittany/Scripts bamDIR=/data/rc003/Brittany/Alignment/mouseBAM intDIR=/data/rc003/Brittany/Data/L1Location refGenDIR=/data/rc003/Brittany/genomes outDIR=/data/rc003/Brittany/findGaps/outputGapFinding/ sbatch test.sh Mut-F2-Rep1_CGTACG_L007.STAR.10.45.bam.bai
 
 #SBATCH -p batch
 #SBATCH -N 1 
 #SBATCH -n 8 
-#SBATCH --time=0-04:00
+#SBATCH --time=0-08:00
 #SBATCH --mem=50GB 
 
 # Notification configuration 
@@ -15,69 +16,36 @@
 #SBATCH --mail-user=brittany.howell@student.adelaide.edu.au    
 
 
+## Variables
+	# Variables for mouse:
 
+		# Filepath variables:
+		# scriptDIR=/data/rc003/Brittany/Scripts
+		# bamDIR=/data/rc003/Brittany/Alignment/mouseBAM
+		# outDIR=/data/rc003/Brittany/findGaps/outputGapFinding/
+		# intDIR=/data/rc003/Brittany/Data/L1Location
+		# refGenDIR=/data/rc003/Brittany/genomes
 
-# scriptDIR=/data/rc003/Brittany/Scripts
-# bamDIR=/data/rc003/Brittany/Alignment/mouseBAM
+		# intervalsBed="ClusActiveL1s.bed"
+		# # intervalsBed="ClusAllL1s.bed"
 
-# intDIR=/data/rc003/Brittany/Data/L1Location
-# intervalsBed="ClusActiveL1s.bed"
-# # intervalsBed="ClusAllL1s.bed"
+		# refGen="mm10.fa"
 
-# refGenDIR=/data/rc003/Brittany/genomes
-# refGen="mm10.fa"
+	
 
-# outDIR=/data/rc003/Brittany/findGaps/outputGapFinding/
+	# Variables for human:
 
+		# Filepath variables:
+		scriptDIR=/data/rc003/Brittany/Scripts 
+		bamDIR=/data/rc003/Brittany/humanAlignment/ 
+		intDIR=/data/rc003/Brittany/Data/L1Location 
+		refGenDIR=/data/rc003/Brittany/genomes 
+		outDIR=/data/rc003/Brittany/findGaps/suppRuns/ 
 
-
-# scriptDIR=/data/rc003/Brittany/Scriptscd ..
-# bamDIR=/data/rc003/Brittany/humanAlignment/
-# ################
-# ################
-# ###FIND INTERVALS
-# intDIR=/data/rc003/Brittany/Data/L1Location
-# intervalsBed="human_L1_ORF2_bothORF.bed"
-# # intervalsBed="ClusAllL1s.bed"
-# ################
-# ################
-
-# refGenDIR=/data/rc003/Brittany/genomes
-# refGen="hg38.fa"
-# outDIR=/data/rc003/Brittany/findGaps/Human
-
-
-scriptDIR=/data/rc003/Brittany/Scripts bamDIR=/data/rc003/Brittany/humanAlignment/ intDIR=/data/rc003/Brittany/Data/L1Location refGenDIR=/data/rc003/Brittany/genomes outDIR=/data/rc003/Brittany/findGaps/suppRuns/ 
-################
-################
-###FIND INTERVALS
-
-# intervalsBed="human_L1_bothORF.bed"
-intervalsBed="human_L1_ORF2_bothORF.bed"
-# intervalsBed="ClusAllL1s.bed"
-################
-################
-
-
-refGen="hg38.fa"
-
-
-
-
-# scriptDIR=/data/rc003/Brittany/Scripts bamDIR=/data/rc003/Brittany/Alignment/mouseBAM intDIR=/data/rc003/Brittany/Data/L1Location refGenDIR=/data/rc003/Brittany/genomes outDIR=/data/rc003/Brittany/findGaps/outputGapFinding/ sbatch test.sh Mut-F2-Rep1_CGTACG_L007.STAR.10.45.bam.bai
-
-
-
-
-
-# testDIRs
-# bamDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/bamReading/Scripts/sampleBams
-# intDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/bamReading/Scripts/sampleBams
-# intervalsBed="tiny.bed"
-# outDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/bamReading/Scripts/sampleBams/
-# outPrefix=gapInRead${bamRecord%.STAR.10.45.bam}
-# refGenDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/Data/genomeAssemblies
-# refGen="mm10.small"
+		# Non-filepath variables
+		# intervalsBed="human_L1_bothORF.bed"
+		intervalsBed="human_L1_ORF2_bothORF.bed"
+		refGen="hg38.fa"
 
 
 
@@ -89,9 +57,6 @@ cd ${bamDIR}
 outPrefix="gapInRead${bamRecord%.STAR.10.45.bam}"
 echo "Running for ${outPrefix}"
  	go run bamReader.go -index=${bamDIR}/${bam} -bam=${bamDIR}/${bamRecord} -intervalsBed=${intDIR}/${intervalsBed} -outPath=${outDIR} -outName=${outPrefix}.txt -seqOutName=${outPrefix}_FullIntron.txt -refGen=${refGenDIR}/${refGen} -logo5Name=${outPrefix}_5SJ.txt -logo3Name=${outPrefix}_3SJ.txt
- 
-
-
 
 
 echo "Complete table"

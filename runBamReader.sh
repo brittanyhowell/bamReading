@@ -1,8 +1,8 @@
 #!/bin/bash
 # Runs bamReader.go
+# Updated version can be found at "PhoenixRunBamReader.sh" because running this in a for loop is really not advisable. Don't do it.
 
 scriptDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/bamReading/Scripts/
-
 bamDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/Data/BAMs/transfer/
 # # index="Mut-F5-Rep1_ACAGTG_L008.STAR.10.45.bam.bai"
 # # bam="Mut-F5-Rep1_ACAGTG_L008.STAR.10.45.bam"
@@ -20,7 +20,7 @@ outPrefix=gapInRead${bamRecord%.STAR.10.45.bam}
 
 
 
-# testDIRs
+# testDIRs - for when a quick run is needed
 # bamDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/bamReading/Scripts/sampleBams
 # intDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/bamReading/Scripts/sampleBams
 # intervalsBed="tiny.bed"
@@ -42,33 +42,4 @@ for bam in $bamFiles ; do
 done 
 rm bamReader.go
 
-
-
-echo "I finished making tables :)"
-
-# ## R file variables
-# tableDIR=${outDIR}
-# plotDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/bamReading/plots/full
-
-
-# cd ${outDIR}
-
-# for gap in *.txt; do 
-
-# 	gapTable=${gap}
-# 	makeName=$(echo $gap | sed 's/_/	/g' | awk '{print $2}')
-# 	pdfGAP="${makeName}.pdf"
-# 	plotName="STAR-${makeName}"
-# 	## Run the R script for plotting
-
-# # echo ${gapTable}
-# # echo ${makeName}
-# # echo ${pdfGAP}
-# # echo ${plotName}
-# # echo .
-# 	# Rscript coverageSplitReads.R ${tableDIR}/${gapTable} ${plotDIR}/${pdfGAP} ${plotName}
-# 	# args 1: table name
-# 	# args 2: name of PDF
-# 	# args 3: title on plot
-
-# done
+echo "I finished making tables"
