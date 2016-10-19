@@ -177,7 +177,7 @@ func main() {
 				overlap += extra
 				extra = 0
 				switch co.Type() {
-				case sam.CigarSkipped, sam.CigarDeletion:
+				case sam.CigarSkipped, sam.CigarInsertion:
 					fSplice = true
 					startInL1 := r.Start() - f.Start()
 					//	fmt.Printf("Possible splice: \tL1: %v:%v-%v \t Start: %v \tEnd: %v \tLength: %v \t%v\n",
