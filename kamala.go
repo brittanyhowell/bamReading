@@ -184,7 +184,7 @@ func main() {
 					//	f.Chrom, f.Start(), f.End(), startInL1+overlap, startInL1+overlap+gapLen, gapLen, r.Cigar)
 					startGap := startInL1 + overlap
 					endGap := startInL1 + overlap + gapLen
-					if gapLen > 4 && gapLen < 2000 {
+					if gapLen > 4 {
 
 						seq := r.Seq.Expand()
 						letter := alphabet.Letters(alphabet.BytesToLetters(seq))
@@ -216,6 +216,8 @@ func main() {
 							f.Chrom,   // chromosome of L1
 							f.Start(), // L1 genomic start
 							f.End(),   // L1 genomic end
+							startGap,  // start position of gap relative to L1
+							endGap,    // end position of gap relative to L1
 							nucs.Slice(genStartGap-3, genEndGap+3), //
 						)
 
