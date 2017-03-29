@@ -1,6 +1,6 @@
 #!/bin/bash
 # Runs bamReader.go
-## phoenixRunBamReader.sh
+## runBamReader.sh
 ## Script is the batch script which is called by "runPhoenixRunBamReader" and hence the filepath variables need to be declared not here, but in the call. They are presented here still only for ease. 
 ## invoked by: scriptDIR=/data/rc003/Brittany/Scripts bamDIR=/data/rc003/Brittany/Alignment/mouseBAM intDIR=/data/rc003/Brittany/Data/L1Location refGenDIR=/data/rc003/Brittany/genomes outDIR=/data/rc003/Brittany/findGaps/outputGapFinding/ sbatch test.sh Mut-F2-Rep1_CGTACG_L007.STAR.10.45.bam.bai
 
@@ -8,7 +8,7 @@
 #SBATCH -N 1 
 #SBATCH -n 8 
 #SBATCH --time=0-08:00
-#SBATCH --mem=50GB 
+#SBATCH --mem=10GB 
 
 # Notification configuration 
 #SBATCH --mail-type=END                                         
@@ -37,10 +37,10 @@
 
 		# Filepath variables:
 		scriptDIR=/data/rc003/Brittany/Scripts 
-		bamDIR=/data/rc003/Brittany/humanAlignment/ 
+		bamDIR=/data/rc003/Brittany/humanStrictAlignment/ 
 		intDIR=/data/rc003/Brittany/Data/L1Location 
 		refGenDIR=/data/rc003/Brittany/genomes 
-		outDIR=/data/rc003/Brittany/findGaps/suppRuns/ 
+		outDIR=/data/rc003/Brittany/findGaps/humanStrict
 
 		# Non-filepath variables
 		# intervalsBed="human_L1_bothORF.bed"

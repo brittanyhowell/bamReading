@@ -1,7 +1,7 @@
 
 ## R file variables
-tableDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/bamReading/Split/runWithGenomeSpliceSites/Human/sorted/stringent
-plotDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/bamReading/plots/Human_Stringent
+tableDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/bamReading/Split/spliceMutant/sorted/either
+plotDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/bamReading/plots/either_spliceMutant
 scriptDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/bamReading/Scripts
 
 
@@ -13,9 +13,9 @@ for gap in *.txt; do
 
 	gapTable=${gap}
 	noGAP="$(echo $gap | sed 's/gapInRead//g')"
-	makeName="${noGAP%.txt}"
+	makeName="${noGAP%_eitherIntron.txt}"
 	pdfGAP="${makeName}.pdf"
-	plotName="human_${makeName}"
+	plotName="${makeName}_eitherIntron"
 	## Run the R script for plotting
 
 # echo $noGAP

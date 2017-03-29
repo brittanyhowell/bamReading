@@ -3,7 +3,7 @@
 # Updated version can be found at "PhoenixRunBamReader.sh" because running this in a for loop is really not advisable. Don't do it.
 
 scriptDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/bamReading/Scripts/
-bamDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/Data/BAMs/transfer/
+bamDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/Data/BAMs/mutSplice/
 # # index="Mut-F5-Rep1_ACAGTG_L008.STAR.10.45.bam.bai"
 # # bam="Mut-F5-Rep1_ACAGTG_L008.STAR.10.45.bam"
 
@@ -12,7 +12,7 @@ intDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/Data/L1Lo
 intervalsBed="ClusActiveL1s.bed"
 # intervalsBed="ClusAllL1s.bed"
 
-refGenDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/Data/genomeAssembliess
+refGenDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/Data/genomeAssemblies
 refGen="mm10.fa"
 
 outDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/bamReading/mouse/
@@ -43,3 +43,6 @@ done
 rm bamReader.go
 
 echo "I finished making tables"
+
+
+go run bamReader.go -index=BH090415.Aligned.sortedByCoord.out.bam.bai -bam=BH090415.Aligned.sortedByCoord.out.bam -intervalsBed=/Users/brittanyhowell/Documents/University/Honours_2016/Project/Data/humanL1Location/convert/genbankBoth.bed -outPath=/Users/brittanyhowell/Documents/University/Honours_2016/Project/Data/BAMs/mutSplice/out/ -outName=spliceMut.txt -seqOutName=spliceMut_FullIntron.txt  -logo5Name=spliceMut_5SJ.txt -logo3Name=spliceMut_3SJ.txt 
