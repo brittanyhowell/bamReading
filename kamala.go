@@ -193,6 +193,7 @@ func main() {
 
 						genStartGap := startGap + f.Start()
 						genEndGap := endGap + f.Start()
+						fmt.Println(AllSeqs)
 						nucs := AllSeqs[f.Chrom].Slice()
 						fiveSJ := nucs.Slice(genStartGap-3, genStartGap+3)
 						threeSJ := nucs.Slice(genEndGap-3, genEndGap+3)
