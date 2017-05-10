@@ -20,32 +20,32 @@
 	# Variables for mouse:
 
 		# Filepath variables:
-		# scriptDIR=/data/rc003/Brittany/Scripts
-		# bamDIR=/data/rc003/Brittany/Alignment/mouseBAM
-		# outDIR=/data/rc003/Brittany/findGaps/outputGapFinding/
-		# intDIR=/data/rc003/Brittany/Data/L1Location
-		# refGenDIR=/data/rc003/Brittany/genomes
+		scriptDIR=/data/rc003/Brittany/Scripts
+		bamDIR=/data/rc003/Brittany/Alignment/mouseBAM/normaliseRunTest
+		outDIR=/data/rc003/Brittany/findGaps/testReadNormalise/
+		intDIR=/data/rc003/Brittany/Data/L1Location
+		refGenDIR=/data/rc003/Brittany/Data/genomes
 
-		# intervalsBed="ClusActiveL1s.bed"
-		# # intervalsBed="ClusAllL1s.bed"
+		intervalsBed="L1_mouseORF1-2-4-8kb.bed"
+		# intervalsBed="ClusAllL1s.bed"
 
-		# refGen="mm10.fa"
+		refGen="mm10.fa"
 
 	
 
 	# Variables for human:
 
-		# Filepath variables:
-		scriptDIR=/data/rc003/Brittany/Scripts 
-		bamDIR=/data/rc003/Brittany/humanStrictAlignment/ 
-		intDIR=/data/rc003/Brittany/Data/L1Location 
-		refGenDIR=/data/rc003/Brittany/genomes 
-		outDIR=/data/rc003/Brittany/findGaps/humanStrict
+		# # Filepath variables:
+		# scriptDIR=/data/rc003/Brittany/Scripts 
+		# bamDIR=/data/rc003/Brittany/humanStrictAlignment/ 
+		# intDIR=/data/rc003/Brittany/Data/L1Location 
+		# refGenDIR=/data/rc003/Brittany/genomes 
+		# outDIR=/data/rc003/Brittany/findGaps/humanStrict
 
-		# Non-filepath variables
-		# intervalsBed="human_L1_bothORF.bed"
-		intervalsBed="human_L1_ORF2_bothORF.bed"
-		refGen="hg38.fa"
+		# # Non-filepath variables
+		# # intervalsBed="human_L1_bothORF.bed"
+		# intervalsBed="human_L1_ORF2_bothORF.bed"
+		# refGen="hg38.fa"
 
 
 
@@ -54,7 +54,7 @@ cd ${bamDIR}
 	bamRecord=${1%.bai}
 	bam=${1}
 
-outPrefix="gapInRead${bamRecord%.STAR.10.45.bam}"
+outPrefix="gapsIn${bamRecord%.STAR.10.45.bam}"
 echo "Running for ${outPrefix}"
  	go run bamReader.go -index=${bamDIR}/${bam} -bam=${bamDIR}/${bamRecord} -intervalsBed=${intDIR}/${intervalsBed} -outPath=${outDIR} -outName=${outPrefix}.txt -seqOutName=${outPrefix}_FullIntron.txt -refGen=${refGenDIR}/${refGen} -logo5Name=${outPrefix}_5SJ.txt -logo3Name=${outPrefix}_3SJ.txt
 
