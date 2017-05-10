@@ -29,6 +29,7 @@ var (
 	logo5Name  string
 	logo3Name  string
 	numSplice  int
+	cSplice    int
 )
 
 func main() {
@@ -142,6 +143,7 @@ func main() {
 		fmt.Printf("\nL1: %v - %v\n", f.Start(), f.End())
 		numRead = 0
 		fSplice := false // if element has a spliced read in it, it becomes positive
+		countSplice := false
 
 		// set chunks
 		chunks, err := bai.Chunks(refs[f.Chrom], f.Start(), f.End())
@@ -162,14 +164,25 @@ func main() {
 			if overlaps(r, f) {
 
 			} else {
-				fmt.Printf("skip! (%v)%v-%v\n", r.Cigar, r.Start(), r.End())
 				continue
 			}
 			numRead++
-			fmt.Printf("Read: %v, \t %v: Coords: %v-%v\n", r.Name, numRead, r.Start()+1, r.End()+1)
+			fmt.Printf("Read: %v, \t %v: Coords: %v-%v\n", r.Name, numRead, r.Start(), r.End())
 
-			var gapLen, overlap, extra, readOverlap int
+			var (
+				startInL1 int
+				endInL1   int
+				startGap  int
+				endGap    int
+
+				gapLen      int
+				overlap     int
+				extra       int
+				readOverlap int
+			)
 			for _, co := range r.Cigar {
+
+				cSplice = 0
 
 				pos := r.Pos
 				t := co.Type()
@@ -185,15 +198,18 @@ func main() {
 				}
 				overlap += extra
 				extra = 0
+
+				startInL1 = r.Start() - f.Start()
+				endInL1 = r.End() - f.Start()
+				//	fmt.Printf("Possible splice: \tL1: %v:%v-%v \t Start: %v \tEnd: %v \tLength: %v \t%v\n",
+				//	f.Chrom, f.Start(), f.End(), startInL1+overlap, startInL1+overlap+gapLen, gapLen, r.Cigar)
+				startGap = startInL1 + overlap
+				endGap = startInL1 + overlap + gapLen
+
 				switch co.Type() {
 				case sam.CigarSkipped, sam.CigarInsertion:
 					fSplice = true
-					fmt.Println("make splice true")
-					startInL1 := r.Start() - f.Start()
-					//	fmt.Printf("Possible splice: \tL1: %v:%v-%v \t Start: %v \tEnd: %v \tLength: %v \t%v\n",
-					//	f.Chrom, f.Start(), f.End(), startInL1+overlap, startInL1+overlap+gapLen, gapLen, r.Cigar)
-					startGap := startInL1 + overlap
-					endGap := startInL1 + overlap + gapLen
+					countSplice = true
 					if gapLen > 4 {
 
 						seq := r.Seq.Expand()
@@ -246,10 +262,15 @@ func main() {
 						)
 					}
 					extra = gapLen // adds to overlap
+
 				}
 			}
+			fmt.Printf("Read information: L1 relative: %v\t%v\t genome relative: %v\t%v\t%v\n", startInL1, endInL1, f.Chrom, r.Start(), r.End())
+			if countSplice {
+				cSplice++
+			}
 		}
-		fmt.Printf("There were %v reads for that L1 (%v-%v)\n", numRead, f.Start(), f.End())
+		fmt.Printf("There were %v reads for that L1 (%v - %v)(%v were spliced)\n", numRead, f.Start(), f.End(), cSplice)
 		err = i.Close()
 		if err != nil {
 			log.Fatal(err)
