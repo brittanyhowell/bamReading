@@ -19,18 +19,19 @@ import (
 )
 
 var (
-	index      string
-	bamFile    string
-	bedFile    string
-	outPath    string
-	outName    string
-	genome     string
-	seqOutName string
-	logo5Name  string
-	logo3Name  string
-	readName   string
-	numSplice  int
-	cSplice    int
+	index       string
+	bamFile     string
+	bedFile     string
+	outPath     string
+	outName     string
+	genome      string
+	seqOutName  string
+	logo5Name   string
+	logo3Name   string
+	readName    string
+	readSumName string
+	numSplice   int
+	cSplice     int
 )
 
 func main() {
@@ -44,6 +45,7 @@ func main() {
 	flag.StringVar(&logo3Name, "logo3Name", "", "sequence containing webLogo 3' file name")
 	flag.StringVar(&genome, "refGen", "", "reference genome")
 	flag.StringVar(&readName, "readName", "", "read information file")
+	flag.StringVar(&readSumName, "readSumName", "", "read summary file")
 	flag.Parse()
 
 	fmt.Println("Loading genome")
@@ -133,6 +135,13 @@ func main() {
 	readOut, err := os.Create(readFile)
 	if err != nil {
 		log.Fatalf("failed to create %s: %v", readFile, err)
+	}
+	defer out.Close()
+
+	readSumFile := fmt.Sprintf("%v%v", outPath, readSumName)
+	readSum, err := os.Create(readSumFile)
+	if err != nil {
+		log.Fatalf("failed to create %s: %v", readSumFile, err)
 	}
 	defer out.Close()
 
@@ -275,20 +284,22 @@ func main() {
 					extra = gapLen // adds to overlap
 				}
 			}
-			fmt.Printf("Read information: L1 relative: %v\t%v\t genome relative: %v\t%v\t%v\n", startInL1, endInL1, f.Chrom, r.Start(), r.End())
+			// fmt.Printf("Read information: L1 relative: %v\t%v\t genome relative: %v\t%v\t%v\n", startInL1, endInL1, f.Chrom, r.Start(), r.End())
 
-			fmt.Fprintf(readOut, "%v\t%v\t%v\t%v\t%v\n",
-				startInL1,
-				endInL1,
-				f.Chrom,
-				r.Start(),
-				r.End(),
+			fmt.Fprintf(readOut, "%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n",
+				f.Chrom,   // Chromosome of L1
+				f.Start(), // Start position of L1
+				f.End(),   // End position of L1
+				startInL1, // Start position of read relative to L1
+				endInL1,   // End position of read relative to L1
+				r.Start(), // Start position of read relative to chromosome
+				r.End(),   // End position of read relative to chromosome
 			)
 			if countSplice {
 				cSplice++
 			}
 		}
-		fmt.Printf("There were %v reads for that L1 (%v - %v)(%v were spliced)\n", numRead, f.Start(), f.End(), cSplice)
+
 		err = i.Close()
 		if err != nil {
 			log.Fatal(err)
@@ -296,6 +307,19 @@ func main() {
 		if fSplice {
 			numSplice++
 		}
+
+		fmt.Printf("There were %v reads for that L1 (%v - %v)(%v were spliced)\n", numRead, f.Start(), f.End(), cSplice)
+		var pSplice float64
+		pSplice = (float64(numSplice) / float64(numRead)) * 100.00
+		fmt.Fprintf(readSum, "%v \t%v \t%v %v\t \t%v \t%.2f\t %v\t\n",
+			f.Chrom,         // Chromosome of L1
+			f.Start(),       // Start position of L1
+			f.End(),         // End position of L1
+			numRead,         // number of reads for that L1
+			cSplice,         // number of spliced reads
+			numRead-cSplice, // number of non-spliced reads
+			pSplice,         // proportion spliced
+		)
 	}
 	err = fsc.Error()
 	if err != nil {
