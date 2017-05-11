@@ -28,6 +28,7 @@ var (
 	seqOutName string
 	logo5Name  string
 	logo3Name  string
+	readName   string
 	numSplice  int
 	cSplice    int
 )
@@ -42,6 +43,7 @@ func main() {
 	flag.StringVar(&logo5Name, "logo5Name", "", "sequence containing webLogo 5' file name")
 	flag.StringVar(&logo3Name, "logo3Name", "", "sequence containing webLogo 3' file name")
 	flag.StringVar(&genome, "refGen", "", "reference genome")
+	flag.StringVar(&readName, "readName", "", "read information file")
 	flag.Parse()
 
 	fmt.Println("Loading genome")
@@ -127,6 +129,13 @@ func main() {
 	}
 	defer out.Close()
 
+	readFile := fmt.Sprintf("%v%v", outPath, readName)
+	readOut, err := os.Create(readFile)
+	if err != nil {
+		log.Fatalf("failed to create %s: %v", readFile, err)
+	}
+	defer out.Close()
+
 	//// Commence reading
 
 	lr, err := bed.NewReader(loc, 3)
@@ -139,9 +148,11 @@ func main() {
 	fsc := featio.NewScanner(lr)
 	for fsc.Next() {
 
+		numRead = 0 // reset number of reads in element
+
 		f := fsc.Feat().(*bed.Bed3)
 		fmt.Printf("\nL1: %v - %v\n", f.Start(), f.End())
-		numRead = 0
+
 		fSplice := false // if element has a spliced read in it, it becomes positive
 		countSplice := false
 
@@ -182,7 +193,7 @@ func main() {
 			)
 			for _, co := range r.Cigar {
 
-				cSplice = 0
+				cSplice = 0 // reset spliced read count
 
 				pos := r.Pos
 				t := co.Type()
@@ -262,10 +273,17 @@ func main() {
 						)
 					}
 					extra = gapLen // adds to overlap
-
 				}
 			}
 			fmt.Printf("Read information: L1 relative: %v\t%v\t genome relative: %v\t%v\t%v\n", startInL1, endInL1, f.Chrom, r.Start(), r.End())
+
+			fmt.Fprintf(readOut, "%v\t%v\t%v\t%v\t%v\n",
+				startInL1,
+				endInL1,
+				f.Chrom,
+				r.Start(),
+				r.End(),
+			)
 			if countSplice {
 				cSplice++
 			}
