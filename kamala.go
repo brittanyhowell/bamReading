@@ -311,7 +311,7 @@ func main() {
 		fmt.Printf("There were %v reads for that L1 (%v - %v)(%v were spliced)\n", numRead, f.Start(), f.End(), cSplice)
 		var pSplice float64
 		pSplice = (float64(numSplice) / float64(numRead)) * 100.00
-		fmt.Fprintf(readSum, "%v \t%v \t%v %v\t \t%v \t%.2f\t %v\t\n",
+		fmt.Fprintf(readSum, "%v \t%v \t%v \t %v\t \t%v \t%.2f\t %v\t\n", // FIX ME
 			f.Chrom,         // Chromosome of L1
 			f.Start(),       // Start position of L1
 			f.End(),         // End position of L1
