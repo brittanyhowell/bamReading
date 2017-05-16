@@ -48,24 +48,7 @@ func main() {
 	flag.StringVar(&readSumName, "readSumName", "", "read summary file")
 	flag.Parse()
 
-	fmt.Println("Loading genome")
-	gen, err := os.Open(genome)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v.", err)
-		os.Exit(1)
-	}
-	defer gen.Close()
-
-	in := fasta.NewReader(gen, linear.NewSeq("", nil, alphabet.DNA))
-	sc := seqio.NewScanner(in)
-	AllSeqs := map[string]*linear.Seq{}
-
-	for sc.Next() {
-		s := sc.Seq().(*linear.Seq)
-
-		AllSeqs[s.Name()] = s
-	}
-	fmt.Println("Genome loaded")
+	fmt.Println("Begin")
 
 	// read index
 	ind, err := os.Open(index)
@@ -106,44 +89,63 @@ func main() {
 	file := fmt.Sprintf("%v%v", outPath, outName)
 	out, err := os.Create(file)
 	if err != nil {
-		log.Fatalf("failed to create %s: %v", file, err)
+		log.Fatalf("failed to create out %s: %v", file, err)
 	}
 	defer out.Close()
 
 	seqFile := fmt.Sprintf("%v%v", outPath, seqOutName)
 	seqOut, err := os.Create(seqFile)
 	if err != nil {
-		log.Fatalf("failed to create %s: %v", seqFile, err)
+		log.Fatalf("failed to create seqOut %s: %v", seqFile, err)
 	}
 	defer seqOut.Close()
 
 	threeFile := fmt.Sprintf("%v%v", outPath, logo3Name)
 	logo3out, err := os.Create(threeFile)
 	if err != nil {
-		log.Fatalf("failed to create %s: %v", threeFile, err)
+		log.Fatalf("failed to create logo3out %s: %v", threeFile, err)
 	}
 	defer out.Close()
 
 	fiveFile := fmt.Sprintf("%v%v", outPath, logo5Name)
 	logo5out, err := os.Create(fiveFile)
 	if err != nil {
-		log.Fatalf("failed to create %s: %v", fiveFile, err)
+		log.Fatalf("failed to create fiveFile %s: %v", fiveFile, err)
 	}
 	defer out.Close()
 
 	readFile := fmt.Sprintf("%v%v", outPath, readName)
 	readOut, err := os.Create(readFile)
 	if err != nil {
-		log.Fatalf("failed to create %s: %v", readFile, err)
+		log.Fatalf("failed to create readOut %s: %v", readFile, err)
 	}
 	defer out.Close()
 
 	readSumFile := fmt.Sprintf("%v%v", outPath, readSumName)
 	readSum, err := os.Create(readSumFile)
 	if err != nil {
-		log.Fatalf("failed to create %s: %v", readSumFile, err)
+		log.Fatalf("failed to create readSum %s: %v", readSumFile, err)
 	}
 	defer out.Close()
+
+	fmt.Println("Loading genome")
+	gen, err := os.Open(genome)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v.", err)
+		os.Exit(1)
+	}
+	defer gen.Close()
+
+	in := fasta.NewReader(gen, linear.NewSeq("", nil, alphabet.DNA))
+	sc := seqio.NewScanner(in)
+	AllSeqs := map[string]*linear.Seq{}
+
+	for sc.Next() {
+		s := sc.Seq().(*linear.Seq)
+
+		AllSeqs[s.Name()] = s
+	}
+	fmt.Println("Genome loaded")
 
 	//// Commence reading
 
@@ -156,7 +158,7 @@ func main() {
 
 	fsc := featio.NewScanner(lr)
 	for fsc.Next() {
-
+		cSplice = 0 // reset spliced read count
 		numRead = 0 // reset number of reads in element
 
 		f := fsc.Feat().(*bed.Bed3)
@@ -179,6 +181,7 @@ func main() {
 
 		// iterate over reads
 		for i.Next() {
+
 			r := i.Record()
 
 			if overlaps(r, f) {
@@ -201,8 +204,6 @@ func main() {
 				readOverlap int
 			)
 			for _, co := range r.Cigar {
-
-				cSplice = 0 // reset spliced read count
 
 				pos := r.Pos
 				t := co.Type()
@@ -286,7 +287,7 @@ func main() {
 			}
 			// fmt.Printf("Read information: L1 relative: %v\t%v\t genome relative: %v\t%v\t%v\n", startInL1, endInL1, f.Chrom, r.Start(), r.End())
 
-			fmt.Fprintf(readOut, "%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n",
+			fmt.Fprintf(readOut, "%v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \n",
 				f.Chrom,   // Chromosome of L1
 				f.Start(), // Start position of L1
 				f.End(),   // End position of L1
@@ -294,6 +295,7 @@ func main() {
 				endInL1,   // End position of read relative to L1
 				r.Start(), // Start position of read relative to chromosome
 				r.End(),   // End position of read relative to chromosome
+				r.Cigar,   // Cigar string
 			)
 			if countSplice {
 				cSplice++
@@ -310,8 +312,8 @@ func main() {
 
 		fmt.Printf("There were %v reads for that L1 (%v - %v)(%v were spliced)\n", numRead, f.Start(), f.End(), cSplice)
 		var pSplice float64
-		pSplice = (float64(numSplice) / float64(numRead)) * 100.00
-		fmt.Fprintf(readSum, "%v \t%v \t%v \t %v\t \t%v \t%.2f\t %v\t\n", // FIX ME
+		pSplice = (float64(cSplice) / float64(numRead)) * 100.00
+		fmt.Fprintf(readSum, "%v \t %v \t %v \t %v \t %v \t %v \t %.2f \n", // FIX ME
 			f.Chrom,         // Chromosome of L1
 			f.Start(),       // Start position of L1
 			f.End(),         // End position of L1
