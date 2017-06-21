@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"reflect"
 
 	"github.com/biogo/biogo/alphabet"
 	"github.com/biogo/biogo/feat"
@@ -229,6 +230,7 @@ func main() {
 
 				switch co.Type() {
 				case sam.CigarSkipped, sam.CigarInsertion:
+
 					fSplice = true
 					countSplice = true
 					if gapLen > 4 {
@@ -240,6 +242,7 @@ func main() {
 
 						genStartGap := startGap + f.Start()
 						genEndGap := endGap + f.Start()
+
 						nucs := AllSeqs[f.Chrom].Slice()
 						fiveSJ := nucs.Slice(genStartGap-3, genStartGap+3)
 						threeSJ := nucs.Slice(genEndGap-3, genEndGap+3)
@@ -258,6 +261,80 @@ func main() {
 							r.Cigar,     // cigar string of read
 							r.Flags,     // flags relative to read
 						)
+
+						bytAg := []byte("AAAAAA")
+
+						let := alphabet.Letters(alphabet.BytesToLetters(bytAg))
+						fmt.Println("Let", let)
+						// seqAll := sequtils.Truncate(AllSeqs[f.Chrom], AllSeqs[f.Chrom], )
+						// coord := genStartGap
+						// // seqAll := AllSeqs[f.Chrom].At(i).L
+
+						// // fmt.Println(seqAll)
+						// fmt.Println(coord)
+						// trunc := AllSeqs[f.Chrom]
+						// ate := sequtils.Truncate(trunc, trunc, 0, 100)
+						// fmt.Printf("data: %v\n", ate)
+
+						// var bytSeq []byte
+						// // var count int
+
+						// for icoord := genStartGap; icoord < genEndGap; icoord++ {
+						// 	sjNuc := AllSeqs[f.Chrom].At(icoord).L
+						// 	fmt.Printf("%v ", sjNuc)
+						// 	fmt.Println(reflect.TypeOf(sjNuc))
+						// 	// bytSeq[count] = sjNuc
+						// 	// count++
+						// }
+						// fmt.Println()
+
+						// fmt.Println(bytSeq)
+
+						// fmt.Println(reflect.TypeOf(seqAll))
+
+						// in := fasta.NewReader(gen, linear.NewSeq("", nil, alphabet.DNA))
+						// sc := seqio.NewScanner(in)
+						// AllSeqs := map[string]*linear.Seq{}
+
+						// for sc.Next() {
+						// 	s := sc.Seq().(*linear.Seq)
+
+						// 	AllSeqs[s.Name()] = s
+						// }
+						// fmt.Println("Genome loaded")
+
+						// fmt.Printf("\ntesting things: %v\n\n", len(AllSeqs))
+
+						// for key, val := range AllSeqs {
+						// 	fmt.Println("Key:", key, "Value:", val.Slice().Slice(0, 1))
+						// }
+
+						// trunc := AllSeqs[f.Chrom].Slice().Slice(0, 1)
+
+						// if trunc == trunc {
+						// 	fmt.Println(trunc)
+						// }
+						fmt.Println(fiveSJ)
+						fmt.Println(threeSJ)
+						if reflect.DeepEqual(fiveSJ, let) {
+							fmt.Println("=")
+						}
+
+						//
+						//
+						//
+
+						// ag := alphabet.Letters(alphabet.BytesToLetters(bytAg))
+
+						// fmt.Printf("\nTesting things: %v, %v \n\n", ag, beginsplice)
+
+						// if ag == beginsplice {
+						// 	fmt.Println("cat")
+
+						// }
+
+						// b := AllSeqs[f.Chrom].
+						// 	fmt.Println(byt)
 
 						fmt.Fprintf(seqOut, "%v \t%v \t %v \t %v \n",
 							f.Chrom,   // chromosome of L1
@@ -327,7 +404,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("bed scan failed: %v", err)
 	}
-	fmt.Printf("There were %v intervals with at least one spliced read\n", numSplice)
+	fmt.Printf("There were %v intervals with at least one spliced readq\n", numSplice)
 }
 
 func overlaps(r *sam.Record, f feat.Feature) bool {
