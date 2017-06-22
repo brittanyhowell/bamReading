@@ -262,62 +262,17 @@ func main() {
 							r.Flags,     // flags relative to read
 						)
 
-						bytAg := []byte("AAAAAA")
+						bytAg := []byte("AAAATA")
 
 						let := alphabet.Letters(alphabet.BytesToLetters(bytAg))
 						fmt.Println("Let", let)
-						// seqAll := sequtils.Truncate(AllSeqs[f.Chrom], AllSeqs[f.Chrom], )
-						// coord := genStartGap
-						// // seqAll := AllSeqs[f.Chrom].At(i).L
 
-						// // fmt.Println(seqAll)
-						// fmt.Println(coord)
-						// trunc := AllSeqs[f.Chrom]
-						// ate := sequtils.Truncate(trunc, trunc, 0, 100)
-						// fmt.Printf("data: %v\n", ate)
-
-						// var bytSeq []byte
-						// // var count int
-
-						// for icoord := genStartGap; icoord < genEndGap; icoord++ {
-						// 	sjNuc := AllSeqs[f.Chrom].At(icoord).L
-						// 	fmt.Printf("%v ", sjNuc)
-						// 	fmt.Println(reflect.TypeOf(sjNuc))
-						// 	// bytSeq[count] = sjNuc
-						// 	// count++
-						// }
-						// fmt.Println()
-
-						// fmt.Println(bytSeq)
-
-						// fmt.Println(reflect.TypeOf(seqAll))
-
-						// in := fasta.NewReader(gen, linear.NewSeq("", nil, alphabet.DNA))
-						// sc := seqio.NewScanner(in)
-						// AllSeqs := map[string]*linear.Seq{}
-
-						// for sc.Next() {
-						// 	s := sc.Seq().(*linear.Seq)
-
-						// 	AllSeqs[s.Name()] = s
-						// }
-						// fmt.Println("Genome loaded")
-
-						// fmt.Printf("\ntesting things: %v\n\n", len(AllSeqs))
-
-						// for key, val := range AllSeqs {
-						// 	fmt.Println("Key:", key, "Value:", val.Slice().Slice(0, 1))
-						// }
-
-						// trunc := AllSeqs[f.Chrom].Slice().Slice(0, 1)
-
-						// if trunc == trunc {
-						// 	fmt.Println(trunc)
-						// }
 						fmt.Println(fiveSJ)
 						fmt.Println(threeSJ)
 						if reflect.DeepEqual(fiveSJ, let) {
 							fmt.Println("=")
+						} else {
+							fmt.Println("Not =")
 						}
 
 						//
