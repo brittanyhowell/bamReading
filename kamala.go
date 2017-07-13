@@ -244,8 +244,9 @@ func main() {
 						genEndGap := endGap + f.Start()
 
 						nucs := AllSeqs[f.Chrom].Slice()
-						fiveSJ := nucs.Slice(genStartGap-3, genStartGap+3)
-						threeSJ := nucs.Slice(genEndGap-3, genEndGap+3)
+						fiveSJ := nucs.Slice(genStartGap-2, genStartGap+2)
+						threeSJ := nucs.Slice(genEndGap-2, genEndGap+1)
+
 						fmt.Fprintf(out, "%v \t%v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v\n",
 							r.Name,      // read name
 							f.Chrom,     // chromosome of L1
@@ -262,34 +263,7 @@ func main() {
 							r.Flags,     // flags relative to read
 						)
 
-						bytAg := []byte("AAAATA")
-
-						let := alphabet.Letters(alphabet.BytesToLetters(bytAg))
-						fmt.Println("Let", let)
-
-						fmt.Println(fiveSJ)
-						fmt.Println(threeSJ)
-						if reflect.DeepEqual(fiveSJ, let) {
-							fmt.Println("=")
-						} else {
-							fmt.Println("Not =")
-						}
-
-						//
-						//
-						//
-
-						// ag := alphabet.Letters(alphabet.BytesToLetters(bytAg))
-
-						// fmt.Printf("\nTesting things: %v, %v \n\n", ag, beginsplice)
-
-						// if ag == beginsplice {
-						// 	fmt.Println("cat")
-
-						// }
-
-						// b := AllSeqs[f.Chrom].
-						// 	fmt.Println(byt)
+						sjscore(fiveSJ)
 
 						fmt.Fprintf(seqOut, "%v \t%v \t %v \t %v \n",
 							f.Chrom,   // chromosome of L1
@@ -359,7 +333,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("bed scan failed: %v", err)
 	}
-	fmt.Printf("There were %v intervals with at least one spliced readq\n", numSplice)
+	fmt.Printf("There were %v intervals with at least one spliced read\n", numSplice)
 }
 
 func overlaps(r *sam.Record, f feat.Feature) bool {
@@ -379,4 +353,16 @@ func max(a, b int) int {
 		return b
 	}
 	return a
+}
+
+func sjscore(five alphabet.Slice) (int, error) {
+
+	bytAg := []byte("AGGU")
+	let := alphabet.Letters(alphabet.BytesToLetters(bytAg))
+	if reflect.DeepEqual(five, let) {
+		return fmt.Println("function says =")
+	} else {
+		return fmt.Printf("Not function =\n canonical: %v\n ours: %v\n", five, let)
+	}
+
 }
