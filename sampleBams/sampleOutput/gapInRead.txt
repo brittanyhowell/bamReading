@@ -1,0 +1,1 @@
+test6 	chr1 	 4000 	 5000 	 902 	 912 	 AAAA 	 AAA 	 AG 	 AA 	 10 	 24M10N77M 	 pP---R1-----

@@ -1,0 +1,2 @@
+chr1 	4000 	 5000 	 902 
+%!(EXTRA int=912, alphabet.Letters=AAAAAAAAAAAAAAAA)

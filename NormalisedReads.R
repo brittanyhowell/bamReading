@@ -44,12 +44,12 @@ library(ggplot2)
   cov <- coverage(intervals)
   
   ## Function : Plots boxy box plots
-  plotRanges <- function(x, xlim = x, main = "boxy reads",
+  plotRanges <- function(x, xlim = x, main = "",
                          col = "black", sep = .1, ...)
   {
     height <- .2
     if (is(xlim, "Ranges"))
-      xlim <- c(min(start(xlim)), max(end(xlim)))
+      xlim <- c(min(start(xlim)), 10000)
     bins <- disjointBins(IRanges(start(x), end(x) + 1))
     plot.new()
     plot.window(xlim, c(0, max(bins)*(height + sep)))
@@ -61,7 +61,7 @@ library(ggplot2)
   
   plotRanges(intervals) 
   
-
+# max x coord: max(end(xlim))
 
    
    # cov <- as.vector(cov)
@@ -97,12 +97,36 @@ library(ggplot2)
   plot(splitCov, type = "l", col = "blue", ylim = c(0,13000), xlab = "Coordinate on L1", ylab = "read coverage")
   lines(cov, type = "l", col = "red")
   
+  lines(splitCov, type = "l", col = "blue", ylim = c(0,13000), xlab = "Coordinate on L1", ylab = "read coverage")
+  
   
   # Combining plots (multiPanel)
-  par(mfrow=c(2,1), mar=c(1,1,1,1))
-  plot(cov, type = "l", xlim = c(0,10000), xaxt = 'n', xlab = '')
-  par(mar = c(4, 2, 1, 1))
-  plot(splitCov, type = "l", xlim = c(0,10000))
+  par(mfrow=c(2,1), mar=c(1,4,1,1))
+  plot(cov, type = "l", xlim = c(0,10000), xaxt = 'n', xlab = '') # All reads - coverage
+  par(mar = c(4, 4, 1, 1))
+  # plot(splitCov, type = "l", xlim = c(0,10000)) # Coverage
+  plotRanges(splitIntervals) # Oh so boxy
   
+  
+  ### Matrix things
+  
+  
+mat <- matrix(sample(c(0,1), size = 1000, replace = TRUE), 
+                nrow = 100)
+image(t(mat[nrow(mat):1,]), col = c("black", "white"))
 
-  
+mat[1:10][2:3][1]
+
+mat[1:length(mat)]
+
+mat[11]
+
+
+
+HCLUST <- hclust(dist(mat))
+
+
+
+
+
+
