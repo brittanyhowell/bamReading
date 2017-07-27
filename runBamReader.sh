@@ -34,6 +34,7 @@
 bamDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/bamReading/Scripts/sampleBams/OneTest
 intDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/bamReading/Scripts/sampleBams
 intervalsBed="tiny.bed"
+SJMap="SJMap.txt"
 outDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/bamReading/Scripts/sampleBams/sampleOutput/
 outPrefix=gapInRead${bamRecord}
 refGenDIR=/Users/brittanyhowell/Documents/University/Honours_2016/Project/Data/genomes
@@ -43,7 +44,7 @@ bam=test5.bam.bai
 
 	bamRecord=${bam%.bai}
 
- 	go run kamala.go -index=${bamDIR}/${bam} -bam=${bamDIR}/${bamRecord} -intervalsBed=${intDIR}/${intervalsBed} -outPath=${outDIR} -outName=${outPrefix}.txt -seqOutName=${outPrefix}_FullIntron.txt -refGen=${refGenDIR}/${refGen} -logo5Name=${outPrefix}_5SJ.txt -logo3Name=${outPrefix}_3SJ.txt -readName=${outPrefix}_reads.txt -readSumName=${outPrefix}_readSummary.txt
+ 	go run kamala.go -index=${bamDIR}/${bam} -bam=${bamDIR}/${bamRecord} -intervalsBed=${intDIR}/${intervalsBed} -outPath=${outDIR} -outName=${outPrefix}.txt -seqOutName=${outPrefix}_FullIntron.txt -refGen=${refGenDIR}/${refGen} -logo5Name=${outPrefix}_5SJ.txt -logo3Name=${outPrefix}_3SJ.txt -readName=${outPrefix}_reads.txt -readSumName=${outPrefix}_readSummary.txt -SJMap=${bamDIR}/${SJMap}
  
 # done 
 # rm bamReader.go

@@ -2,6 +2,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"flag"
 	"fmt"
@@ -32,6 +33,7 @@ var (
 	logo3Name   string
 	readName    string
 	readSumName string
+	SJMap       string
 	numSplice   int
 	cSplice     int
 )
@@ -48,6 +50,7 @@ func main() {
 	flag.StringVar(&genome, "refGen", "", "reference genome")
 	flag.StringVar(&readName, "readName", "", "read information file")
 	flag.StringVar(&readSumName, "readSumName", "", "read summary file")
+	flag.StringVar(&SJMap, "SJMap", "", "SJ Classification map")
 	flag.Parse()
 
 	fmt.Println("Begin")
@@ -129,6 +132,27 @@ func main() {
 		log.Fatalf("failed to create readSum %s: %v", readSumFile, err)
 	}
 	defer out.Close()
+
+	// read SJ data
+	SpJu, err := os.Open(SJMap)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v.", err)
+		os.Exit(1)
+	}
+	defer SpJu.Close()
+
+	scSJ := bufio.NewScanner(SpJu)
+	AllSJ := map[string]int{}
+
+	var count int
+	count = 1
+
+	// scan into map
+	for scSJ.Scan() {
+		sj := scSJ.Text()
+		AllSJ[sj] = count
+		count++
+	}
 
 	fmt.Println("Loading genome")
 	gen, err := os.Open(genome)
