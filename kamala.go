@@ -111,28 +111,28 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to create logo3out %s: %v", threeFile, err)
 	}
-	defer out.Close()
+	defer logo3out.Close()
 
 	fiveFile := fmt.Sprintf("%v%v", outPath, logo5Name)
 	logo5out, err := os.Create(fiveFile)
 	if err != nil {
 		log.Fatalf("failed to create fiveFile %s: %v", fiveFile, err)
 	}
-	defer out.Close()
+	defer logo5out.Close()
 
 	readFile := fmt.Sprintf("%v%v", outPath, readName)
 	readOut, err := os.Create(readFile)
 	if err != nil {
 		log.Fatalf("failed to create readOut %s: %v", readFile, err)
 	}
-	defer out.Close()
+	defer readOut.Close()
 
 	readSumFile := fmt.Sprintf("%v%v", outPath, readSumName)
 	readSum, err := os.Create(readSumFile)
 	if err != nil {
 		log.Fatalf("failed to create readSum %s: %v", readSumFile, err)
 	}
-	defer out.Close()
+	defer readSum.Close()
 
 	// read SJ data
 	SpJu3, err := os.Open(SJMap3)
@@ -270,8 +270,6 @@ func main() {
 
 				startInL1 = r.Start() - f.Start()
 				endInL1 = r.End() - f.Start()
-				//	fmt.Printf("Possible splice: \tL1: %v:%v-%v \t Start: %v \tEnd: %v \tLength: %v \t%v\n",
-				//	f.Chrom, f.Start(), f.End(), startInL1+overlap, startInL1+overlap+gapLen, gapLen, r.Cigar)
 				startGap = startInL1 + overlap
 				endGap = startInL1 + overlap + gapLen
 
@@ -282,58 +280,52 @@ func main() {
 					countSplice = true
 					if gapLen > 4 {
 
-						seq := r.Seq.Expand()
-						letter := alphabet.Letters(alphabet.BytesToLetters(seq))
-						beginsplice := letter.Slice(readOverlap-2, readOverlap)
-						endSplice := letter.Slice(readOverlap, readOverlap+2)
-
 						genStartGap := startGap + f.Start()
 						genEndGap := endGap + f.Start()
 
 						genStartSJ := genStartGap - 2
+						genEndSJ := genEndGap - 2
 
 						var buffer5 bytes.Buffer
 						for i := genStartSJ; i < genStartSJ+4; i++ {
-
 							buffer5.WriteString(string(AllSeqs[f.Chrom].At(i).L))
 						}
 						sFiveSJ := buffer5.String()
 
-						genEndSJ := genEndGap - 2
-
 						var buffer3 bytes.Buffer
 						for i := genEndSJ; i < genEndSJ+2; i++ {
-
 							buffer3.WriteString(string(AllSeqs[f.Chrom].At(i).L))
 						}
 						sThreeSJ := buffer3.String()
 						fmt.Println(sFiveSJ, sThreeSJ)
 
-						fmt.Println("The 5' class:", All5SJ[sFiveSJ], "Proof:", sFiveSJ)
+						fiveSJ := All5SJ[sFiveSJ]
+						threeSJ := All3SJ[sThreeSJ]
+						fmt.Println("The 5' class:", All5SJ[sFiveSJ], "Proof:", fiveSJ)
 						fmt.Println("The 3' class:", All3SJ[sThreeSJ], "Proof:", sThreeSJ)
 
+						// retained only if weblogo or full intron  is wanted
 						nucs := AllSeqs[f.Chrom].Slice()
-						fiveSJ := nucs.Slice(genStartGap-2, genStartGap+2)
-						threeSJ := nucs.Slice(genEndGap-2, genEndGap+1)
+						// fiveSJ := nucs.Slice(genStartGap-2, genStartGap+2)
+						// threeSJ := nucs.Slice(genEndGap-2, genEndGap+1)
 
-						fmt.Printf("5': %v \t 3': %v\n", fiveSJ, threeSJ)
+						// fmt.Printf("5': %v \t 3': %v\n", fiveSJ, threeSJ)
 
-						fmt.Fprintf(out, "%v \t%v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v\n",
-							r.Name,      // read name
-							f.Chrom,     // chromosome of L1
-							f.Start(),   // L1 genomic start
-							f.End(),     // L1 genomic end
-							startGap,    // start position of gap relative to L1
-							endGap,      // end position of gap relative to L1
-							fiveSJ,      // letters at begin of splice
-							threeSJ,     // nucs at end
-							beginsplice, // two nucs in read at 5' end of SJ
-							endSplice,   // two nucs in reads at 3' end of SJ
-							gapLen,      // length of gap
-							r.Cigar,     // cigar string of read
-							r.Flags,     // flags relative to read
+						fmt.Fprintf(out, "%v \t%v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v\n",
+							r.Name,    // read name
+							f.Chrom,   // chromosome of L1
+							f.Start(), // L1 genomic start
+							f.End(),   // L1 genomic end
+							startGap,  // start position of gap relative to L1
+							endGap,    // end position of gap relative to L1
+							fiveSJ,    // Class of 5' SJ
+							threeSJ,   // Class of 3' SJ
+							gapLen,    // length of gap
+							r.Cigar,   // cigar string of read
+							r.Flags,   // flags relative to read
 						)
 
+						// Include only if there is need for an intron
 						fmt.Fprintf(seqOut, "%v \t%v \t %v \t %v \n",
 							f.Chrom,   // chromosome of L1
 							f.Start(), // L1 genomic start
@@ -347,20 +339,19 @@ func main() {
 							f.Chrom,  // chromosome name
 							startGap, // start position of gap relative to L1
 							endGap,   // end position of gap relative to L1
-							fiveSJ,   // letters at begin of splice
+							sFiveSJ,  // letters at begin of splice
 						)
 
 						fmt.Fprintf(logo3out, ">Logo-3'%v:%v-%v\n%v\n",
 							f.Chrom,  // chromosome name
 							startGap, // start position of gap relative to L1
 							endGap,   // end position of gap relative to L1
-							threeSJ,  // letters at begin of splice
+							sThreeSJ, // letters at begin of splice
 						)
 					}
 					extra = gapLen // adds to overlap
 				}
 			}
-			// fmt.Printf("Read information: L1 relative: %v\t%v\t genome relative: %v\t%v\t%v\n", startInL1, endInL1, f.Chrom, r.Start(), r.End())
 
 			fmt.Fprintf(readOut, "%v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \n",
 				f.Chrom,   // Chromosome of L1
