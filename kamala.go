@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"reflect"
 
 	"github.com/biogo/biogo/alphabet"
 	"github.com/biogo/biogo/feat"
@@ -30,6 +31,7 @@ var (
 	seqOutName  string
 	logo5Name   string
 	logo3Name   string
+	logo3out    *os.File
 	readName    string
 	readSumName string
 	SJMap3      string
@@ -106,19 +108,29 @@ func main() {
 	}
 	defer seqOut.Close()
 
-	threeFile := fmt.Sprintf("%v%v", outPath, logo3Name)
-	logo3out, err := os.Create(threeFile)
-	if err != nil {
-		log.Fatalf("failed to create logo3out %s: %v", threeFile, err)
+	if logo3Name != "" {
+		fmt.Println("3' weblogo file provided - will produce 5' splicelogo fasta")
+		threeFile := fmt.Sprintf("%v%v", outPath, logo3Name)
+		logo3out, err := os.Create(threeFile)
+		if err != nil {
+			log.Fatalf("failed to create logo3out %s: %v", threeFile, err)
+		}
+		defer logo3out.Close()
+	} else {
+		fmt.Println("I skipped 3")
 	}
-	defer logo3out.Close()
 
-	fiveFile := fmt.Sprintf("%v%v", outPath, logo5Name)
-	logo5out, err := os.Create(fiveFile)
-	if err != nil {
-		log.Fatalf("failed to create fiveFile %s: %v", fiveFile, err)
+	if logo5Name != "" {
+		fmt.Println("5' weblogo file provided - will produce 5' splicelogo fasta")
+
+		fiveFile := fmt.Sprintf("%v%v", outPath, logo5Name)
+		logo5out, err := os.Create(fiveFile)
+		fmt.Println(reflect.TypeOf(logo5out))
+		if err != nil {
+			log.Fatalf("failed to create fiveFile %s: %v", fiveFile, err)
+		}
+		defer logo5out.Close()
 	}
-	defer logo5out.Close()
 
 	readFile := fmt.Sprintf("%v%v", outPath, readName)
 	readOut, err := os.Create(readFile)
@@ -297,7 +309,6 @@ func main() {
 							buffer3.WriteString(string(AllSeqs[f.Chrom].At(i).L))
 						}
 						sThreeSJ := buffer3.String()
-						fmt.Println(sFiveSJ, sThreeSJ)
 
 						fiveSJ := All5SJ[sFiveSJ]
 						threeSJ := All3SJ[sThreeSJ]
@@ -334,20 +345,23 @@ func main() {
 							endGap,    // end position of gap relative to L1
 							nucs.Slice(genStartGap-3, genEndGap+3), //
 						)
+						// if logo5Name != "" {
+						// 	fmt.Fprintf(logo5out, ">Logo-5'%v:%v-%v\n%v\n",
+						// 		f.Chrom,  // chromosome name
+						// 		startGap, // start position of gap relative to L1
+						// 		endGap,   // end position of gap relative to L1
+						// 		sFiveSJ,  // letters at begin of splice
+						// 	)
+						// }
 
-						fmt.Fprintf(logo5out, ">Logo-5'%v:%v-%v\n%v\n",
-							f.Chrom,  // chromosome name
-							startGap, // start position of gap relative to L1
-							endGap,   // end position of gap relative to L1
-							sFiveSJ,  // letters at begin of splice
-						)
-
-						fmt.Fprintf(logo3out, ">Logo-3'%v:%v-%v\n%v\n",
-							f.Chrom,  // chromosome name
-							startGap, // start position of gap relative to L1
-							endGap,   // end position of gap relative to L1
-							sThreeSJ, // letters at begin of splice
-						)
+						if logo3Name != "" {
+							fmt.Fprintf(logo3out, ">Logo-3'%v:%v-%v\n%v\n",
+								f.Chrom,  // chromosome name
+								startGap, // start position of gap relative to L1
+								endGap,   // end position of gap relative to L1
+								sThreeSJ, // letters at begin of splice
+							)
+						}
 					}
 					extra = gapLen // adds to overlap
 				}

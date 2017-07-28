@@ -45,7 +45,7 @@ bam=test5.bam.bai
 
 	bamRecord=${bam%.bai}
 
- 	go run kamala.go -index=${bamDIR}/${bam} -bam=${bamDIR}/${bamRecord} -intervalsBed=${intDIR}/${intervalsBed} -outPath=${outDIR} -outName=${outPrefix}.txt -seqOutName=${outPrefix}_FullIntron.txt -refGen=${refGenDIR}/${refGen} -logo5Name=${outPrefix}_5SJ.txt -logo3Name=${outPrefix}_3SJ.txt -readName=${outPrefix}_reads.txt -readSumName=${outPrefix}_readSummary.txt -SJMap5=${bamDIR}/${SJMap5} -SJMap3=${bamDIR}/${SJMap3}
+ 	go run kamala.go -index=${bamDIR}/${bam} -bam=${bamDIR}/${bamRecord} -intervalsBed=${intDIR}/${intervalsBed} -outPath=${outDIR} -outName=${outPrefix}.txt -seqOutName=${outPrefix}_FullIntron.txt -refGen=${refGenDIR}/${refGen} -logo5Name=${outPrefix}_5SJ.txt  -readName=${outPrefix}_reads.txt -readSumName=${outPrefix}_readSummary.txt -SJMap5=${bamDIR}/${SJMap5} -SJMap3=${bamDIR}/${SJMap3}
  
 # done 
 # rm bamReader.go
