@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"reflect"
 
 	"github.com/biogo/biogo/alphabet"
 	"github.com/biogo/biogo/feat"
@@ -33,7 +32,8 @@ var (
 	logo3Name   string
 	readName    string
 	readSumName string
-	SJMap       string
+	SJMap3      string
+	SJMap5      string
 	numSplice   int
 	cSplice     int
 )
@@ -50,7 +50,8 @@ func main() {
 	flag.StringVar(&genome, "refGen", "", "reference genome")
 	flag.StringVar(&readName, "readName", "", "read information file")
 	flag.StringVar(&readSumName, "readSumName", "", "read summary file")
-	flag.StringVar(&SJMap, "SJMap", "", "SJ Classification map")
+	flag.StringVar(&SJMap5, "SJMap5", "", "5' SJ Classification map")
+	flag.StringVar(&SJMap3, "SJMap3", "", "3' SJ Classification map")
 	flag.Parse()
 
 	fmt.Println("Begin")
@@ -134,23 +135,44 @@ func main() {
 	defer out.Close()
 
 	// read SJ data
-	SpJu, err := os.Open(SJMap)
+	SpJu3, err := os.Open(SJMap3)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v.", err)
 		os.Exit(1)
 	}
-	defer SpJu.Close()
+	defer SpJu3.Close()
 
-	scSJ := bufio.NewScanner(SpJu)
-	AllSJ := map[string]int{}
+	scSJ3 := bufio.NewScanner(SpJu3)
+	All3SJ := map[string]int{}
 
 	var count int
 	count = 1
 
 	// scan into map
-	for scSJ.Scan() {
-		sj := scSJ.Text()
-		AllSJ[sj] = count
+	for scSJ3.Scan() {
+		sj3 := scSJ3.Text()
+		All3SJ[sj3] = count
+		count++
+	}
+
+	// read SJ data
+	SpJu5, err := os.Open(SJMap5)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v.", err)
+		os.Exit(1)
+	}
+	defer SpJu5.Close()
+
+	scSJ5 := bufio.NewScanner(SpJu5)
+	All5SJ := map[string]int{}
+
+	//reset counter
+	count = 1
+
+	// scan into map
+	for scSJ5.Scan() {
+		sj5 := scSJ5.Text()
+		All5SJ[sj5] = count
 		count++
 	}
 
@@ -270,28 +292,31 @@ func main() {
 
 						genStartSJ := genStartGap - 2
 
-						var buffer bytes.Buffer
+						var buffer5 bytes.Buffer
 						for i := genStartSJ; i < genStartSJ+4; i++ {
 
-							buffer.WriteString(string(AllSeqs[f.Chrom].At(i).L))
+							buffer5.WriteString(string(AllSeqs[f.Chrom].At(i).L))
 						}
-						sFiveSJ := buffer.String()
-						fmt.Println(sFiveSJ)
+						sFiveSJ := buffer5.String()
 
-						sjscore(sFiveSJ)
-						// fmt.Println()
-						// fmt.Println("Whatever this is", genStartGap)
-						// // newNucs := string(AllSeqs[f.Chrom].At(genStartGap).L)
-						// newNucs := string(AllSeqs[f.Chrom].At(2).L)
-						// fmt.Printf("Whatever this extra thing is: %v, type: %v \n", newNucs, reflect.TypeOf(newNucs))
-						// fmt.Println()
+						genEndSJ := genEndGap - 2
+
+						var buffer3 bytes.Buffer
+						for i := genEndSJ; i < genEndSJ+2; i++ {
+
+							buffer3.WriteString(string(AllSeqs[f.Chrom].At(i).L))
+						}
+						sThreeSJ := buffer3.String()
+						fmt.Println(sFiveSJ, sThreeSJ)
+
+						fmt.Println("The 5' class:", All5SJ[sFiveSJ], "Proof:", sFiveSJ)
+						fmt.Println("The 3' class:", All3SJ[sThreeSJ], "Proof:", sThreeSJ)
 
 						nucs := AllSeqs[f.Chrom].Slice()
 						fiveSJ := nucs.Slice(genStartGap-2, genStartGap+2)
 						threeSJ := nucs.Slice(genEndGap-2, genEndGap+1)
 
-						sFSJ := fiveSJ
-						fmt.Println(sFSJ)
+						fmt.Printf("5': %v \t 3': %v\n", fiveSJ, threeSJ)
 
 						fmt.Fprintf(out, "%v \t%v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v\n",
 							r.Name,      // read name
@@ -308,11 +333,6 @@ func main() {
 							r.Cigar,     // cigar string of read
 							r.Flags,     // flags relative to read
 						)
-
-						// sjscore(fiveSJ)
-						fmt.Printf("the fiveSJ: %v\n", fiveSJ)
-
-						fmt.Println(reflect.TypeOf(fiveSJ))
 
 						fmt.Fprintf(seqOut, "%v \t%v \t %v \t %v \n",
 							f.Chrom,   // chromosome of L1
@@ -374,7 +394,7 @@ func main() {
 			f.End(),         // End position of L1
 			numRead,         // number of reads for that L1
 			cSplice,         // number of spliced reads
-			numRead-cSplice, // number of non-spliced reads
+			numRead-cSplice, // number of non-ggspliced reads
 			pSplice,         // proportion spliced
 		)
 	}
@@ -402,270 +422,4 @@ func max(a, b int) int {
 		return b
 	}
 	return a
-}
-
-func sjscore(five string) (int, error) {
-	// str := alphabet.LettersToBytes(five)
-
-	var sjClass = map[string]int{
-
-		"AAAA": 1,
-		"AAAC": 2,
-		"AAAT": 3,
-		"AAAG": 4,
-		"AACA": 5,
-		"AACC": 6,
-		"AACT": 7,
-		"AACG": 8,
-		"AATA": 9,
-		"AATC": 10,
-		"AATT": 11,
-		"AATG": 12,
-		"AAGA": 13,
-		"AAGC": 14,
-		"AAGT": 15,
-		"AAGG": 16,
-		"ACAA": 17,
-		"ACAC": 18,
-		"ACAT": 19,
-		"ACAG": 20,
-		"ACCA": 21,
-		"ACCC": 22,
-		"ACCT": 23,
-		"ACCG": 24,
-		"ACTA": 25,
-		"ACTC": 26,
-		"ACTT": 27,
-		"ACTG": 28,
-		"ACGA": 29,
-		"ACGC": 30,
-		"ACGT": 31,
-		"ACGG": 32,
-		"ATAA": 33,
-		"ATAC": 34,
-		"ATAT": 35,
-		"ATAG": 36,
-		"ATCA": 37,
-		"ATCC": 38,
-		"ATCT": 39,
-		"ATCG": 40,
-		"ATTA": 41,
-		"ATTC": 42,
-		"ATTT": 43,
-		"ATTG": 44,
-		"ATGA": 45,
-		"ATGC": 46,
-		"ATGT": 47,
-		"ATGG": 48,
-		"AGAA": 49,
-		"AGAC": 50,
-		"AGAT": 51,
-		"AGAG": 52,
-		"AGCA": 53,
-		"AGCC": 54,
-		"AGCT": 55,
-		"AGCG": 56,
-		"AGTA": 57,
-		"AGTC": 58,
-		"AGTT": 59,
-		"AGTG": 60,
-		"AGGA": 61,
-		"AGGC": 62,
-		"AGGT": 63,
-		"AGGG": 64,
-		"CAAA": 65,
-		"CAAC": 66,
-		"CAAT": 67,
-		"CAAG": 68,
-		"CACA": 69,
-		"CACC": 70,
-		"CACT": 71,
-		"CACG": 72,
-		"CATA": 73,
-		"CATC": 74,
-		"CATT": 75,
-		"CATG": 76,
-		"CAGA": 77,
-		"CAGC": 78,
-		"CAGT": 79,
-		"CAGG": 80,
-		"CCAA": 81,
-		"CCAC": 82,
-		"CCAT": 83,
-		"CCAG": 84,
-		"CCCA": 85,
-		"CCCC": 86,
-		"CCCT": 87,
-		"CCCG": 88,
-		"CCTA": 89,
-		"CCTC": 90,
-		"CCTT": 91,
-		"CCTG": 92,
-		"CCGA": 93,
-		"CCGC": 94,
-		"CCGT": 95,
-		"CCGG": 96,
-		"CTAA": 97,
-		"CTAC": 98,
-		"CTAT": 99,
-		"CTAG": 100,
-		"CTCA": 101,
-		"CTCC": 102,
-		"CTCT": 103,
-		"CTCG": 104,
-		"CTTA": 105,
-		"CTTC": 106,
-		"CTTT": 107,
-		"CTTG": 108,
-		"CTGA": 109,
-		"CTGC": 110,
-		"CTGT": 111,
-		"CTGG": 112,
-		"CGAA": 113,
-		"CGAC": 114,
-		"CGAT": 115,
-		"CGAG": 116,
-		"CGCA": 117,
-		"CGCC": 118,
-		"CGCT": 119,
-		"CGCG": 120,
-		"CGTA": 121,
-		"CGTC": 122,
-		"CGTT": 123,
-		"CGTG": 124,
-		"CGGA": 125,
-		"CGGC": 126,
-		"CGGT": 127,
-		"CGGG": 128,
-		"TAAA": 129,
-		"TAAC": 130,
-		"TAAT": 131,
-		"TAAG": 132,
-		"TACA": 133,
-		"TACC": 134,
-		"TACT": 135,
-		"TACG": 136,
-		"TATA": 137,
-		"TATC": 138,
-		"TATT": 139,
-		"TATG": 140,
-		"TAGA": 141,
-		"TAGC": 142,
-		"TAGT": 143,
-		"TAGG": 144,
-		"TCAA": 145,
-		"TCAC": 146,
-		"TCAT": 147,
-		"TCAG": 148,
-		"TCCA": 149,
-		"TCCC": 150,
-		"TCCT": 151,
-		"TCCG": 152,
-		"TCTA": 153,
-		"TCTC": 154,
-		"TCTT": 155,
-		"TCTG": 156,
-		"TCGA": 157,
-		"TCGC": 158,
-		"TCGT": 159,
-		"TCGG": 160,
-		"TTAA": 161,
-		"TTAC": 162,
-		"TTAT": 163,
-		"TTAG": 164,
-		"TTCA": 165,
-		"TTCC": 166,
-		"TTCT": 167,
-		"TTCG": 168,
-		"TTTA": 169,
-		"TTTC": 170,
-		"TTTT": 171,
-		"TTTG": 172,
-		"TTGA": 173,
-		"TTGC": 174,
-		"TTGT": 175,
-		"TTGG": 176,
-		"TGAA": 177,
-		"TGAC": 178,
-		"TGAT": 179,
-		"TGAG": 180,
-		"TGCA": 181,
-		"TGCC": 182,
-		"TGCT": 183,
-		"TGCG": 184,
-		"TGTA": 185,
-		"TGTC": 186,
-		"TGTT": 187,
-		"TGTG": 188,
-		"TGGA": 189,
-		"TGGC": 190,
-		"TGGT": 191,
-		"TGGG": 192,
-		"GAAA": 193,
-		"GAAC": 194,
-		"GAAT": 195,
-		"GAAG": 196,
-		"GACA": 197,
-		"GACC": 198,
-		"GACT": 199,
-		"GACG": 200,
-		"GATA": 201,
-		"GATC": 202,
-		"GATT": 203,
-		"GATG": 204,
-		"GAGA": 205,
-		"GAGC": 206,
-		"GAGT": 207,
-		"GAGG": 208,
-		"GCAA": 209,
-		"GCAC": 210,
-		"GCAT": 211,
-		"GCAG": 212,
-		"GCCA": 213,
-		"GCCC": 214,
-		"GCCT": 215,
-		"GCCG": 216,
-		"GCTA": 217,
-		"GCTC": 218,
-		"GCTT": 219,
-		"GCTG": 220,
-		"GCGA": 221,
-		"GCGC": 222,
-		"GCGT": 223,
-		"GCGG": 224,
-		"GTAA": 225,
-		"GTAC": 226,
-		"GTAT": 227,
-		"GTAG": 228,
-		"GTCA": 229,
-		"GTCC": 230,
-		"GTCT": 231,
-		"GTCG": 232,
-		"GTTA": 233,
-		"GTTC": 234,
-		"GTTT": 235,
-		"GTTG": 236,
-		"GTGA": 237,
-		"GTGC": 238,
-		"GTGT": 239,
-		"GTGG": 240,
-		"GGAA": 241,
-		"GGAC": 242,
-		"GGAT": 243,
-		"GGAG": 244,
-		"GGCA": 245,
-		"GGCC": 246,
-		"GGCT": 247,
-		"GGCG": 248,
-		"GGTA": 249,
-		"GGTC": 250,
-		"GGTT": 251,
-		"GGTG": 252,
-		"GGGA": 253,
-		"GGGC": 254,
-		"GGGT": 255,
-		"GGGG": 256,
-	}
-	return fmt.Println("Key: ", sjClass[five])
-
 }
