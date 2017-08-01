@@ -36,16 +36,19 @@
 	# Variables for human:
 
 		# Filepath variables:
-		scriptDIR=/data/rc003/Brittany/Scripts 
-		bamDIR=/data/rc003/Brittany/humanStrictAlignment/testNormalise 
-		intDIR=/data/rc003/Brittany/Data/L1Location 
-		refGenDIR=/data/rc003/Brittany/Data/genomes
+		scriptDIR=/data/rc003/Brittany/Scripts/ 
+		bamDIR=/data/rc003/Brittany/humanStrictAlignment/testNormalise/ 
+		intDIR=/data/rc003/Brittany/Data/L1Location/ 
+		dataDIR=/data/rc003/Brittany/Data/sjMaps/
+		refGenDIR=/data/rc003/Brittany/Data/genomes/
 		outDIR=~/humNorm2/
 
 		# Non-filepath variables
 		# intervalsBed="human_L1_bothORF.bed"
 		intervalsBed="human_L1_ORF2_bothORF.bed"
 		refGen="hg38.fa"
+		SJMap5="SJMap5.txt"
+		SJMap3="SJMap3.txt"
 
 
 
@@ -54,9 +57,9 @@ cd ${bamDIR}
 	bamRecord=${1%.bai}
 	bam=${1}
 
-outPrefix="gapsIn${bamRecord%.STAR.10.45.bam}"
+outPrefix="gapsIn${bamRecord%.STAR.5.25.bam}"
 echo "Running for ${outPrefix}"
- 	go run bamReader.go -index=${bamDIR}/${bam} -bam=${bamDIR}/${bamRecord} -intervalsBed=${intDIR}/${intervalsBed} -outPath=${outDIR} -outName=${outPrefix}.txt -seqOutName=${outPrefix}_FullIntron.txt -refGen=${refGenDIR}/${refGen} -logo5Name=${outPrefix}_5SJ.txt -logo3Name=${outPrefix}_3SJ.txt -readName=${outPrefix}_reads.txt -readSumName=${outPrefix}_readSummary.txt
+ 	go run kamala.go -index=${bamDIR}/${bam} -bam=${bamDIR}/${bamRecord} -intervalsBed=${intDIR}/${intervalsBed} -outPath=${outDIR} -outName=${outPrefix}_splitReads.txt -seqOutName=${outPrefix}_FullIntron.txt -refGen=${refGenDIR}/${refGen}  -readName=${outPrefix}_reads.txt -readSumName=${outPrefix}_readSummary.txt -SJMap5=${dataDIR}/${SJMap5} -SJMap3=${dataDIR}/${SJMap3} -report=${outPrefix}_report.txt
 
 
 echo "Complete table"
