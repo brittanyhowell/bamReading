@@ -9,6 +9,8 @@ import (
 	"log"
 	"os"
 	"reflect"
+	"strings"
+	"time"
 
 	"github.com/biogo/biogo/alphabet"
 	"github.com/biogo/biogo/feat"
@@ -22,6 +24,7 @@ import (
 )
 
 var (
+	report      string
 	index       string
 	bamFile     string
 	bedFile     string
@@ -29,11 +32,15 @@ var (
 	outName     string
 	genome      string
 	seqOutName  string
+	seqOut      *os.File
 	logo5Name   string
 	logo3Name   string
+	logo5out    *os.File
 	logo3out    *os.File
 	readName    string
+	readOut     *os.File
 	readSumName string
+	readSum     *os.File
 	SJMap3      string
 	SJMap5      string
 	numSplice   int
@@ -41,6 +48,7 @@ var (
 )
 
 func main() {
+	flag.StringVar(&report, "report", "untitled_report.txt", "name of report file")
 	flag.StringVar(&index, "index", "", "name index file")
 	flag.StringVar(&bamFile, "bam", "", "name bam file")
 	flag.StringVar(&bedFile, "intervalsBed", "", "BED3 of required intervals")
@@ -57,6 +65,16 @@ func main() {
 	flag.Parse()
 
 	fmt.Println("Begin")
+
+	// Make summary report file
+	report := fmt.Sprintf("%v%v", outPath, report)
+	rep, err := os.Create(report)
+	if err != nil {
+		log.Fatalf("failed to create readSum %s: %v", report, err)
+	}
+	defer rep.Close()
+
+	fmt.Fprintf(rep, "Commence file initialisation at %s\n", time.Now())
 
 	// read index
 	ind, err := os.Open(index)
@@ -101,50 +119,67 @@ func main() {
 	}
 	defer out.Close()
 
-	seqFile := fmt.Sprintf("%v%v", outPath, seqOutName)
-	seqOut, err := os.Create(seqFile)
-	if err != nil {
-		log.Fatalf("failed to create seqOut %s: %v", seqFile, err)
+	if seqOutName != "" {
+		fmt.Fprintf(rep, "File for full intron provided - will report full intron sequence in %s\n", seqOutName)
+		seqFile := fmt.Sprintf("%v%v", outPath, seqOutName)
+		seqOut, err = os.Create(seqFile)
+		if err != nil {
+			log.Fatalf("failed to create seqOut %s: %v", seqFile, err)
+		}
+		defer seqOut.Close()
+	} else {
+		fmt.Fprintf(rep, "File for full intron not provided - will not report full intron sequence\n")
 	}
-	defer seqOut.Close()
 
 	if logo3Name != "" {
 		fmt.Println("3' weblogo file provided - will produce 5' splicelogo fasta")
 		threeFile := fmt.Sprintf("%v%v", outPath, logo3Name)
-		logo3out, err := os.Create(threeFile)
+		logo3out, err = os.Create(threeFile)
 		if err != nil {
 			log.Fatalf("failed to create logo3out %s: %v", threeFile, err)
 		}
 		defer logo3out.Close()
 	} else {
-		fmt.Println("I skipped 3")
+		fmt.Fprintf(rep, "File for 3' splice logo not provided - will not produce 3' Splice logo .fasta\n")
 	}
 
 	if logo5Name != "" {
 		fmt.Println("5' weblogo file provided - will produce 5' splicelogo fasta")
 
 		fiveFile := fmt.Sprintf("%v%v", outPath, logo5Name)
-		logo5out, err := os.Create(fiveFile)
+		logo5out, err = os.Create(fiveFile)
 		fmt.Println(reflect.TypeOf(logo5out))
 		if err != nil {
 			log.Fatalf("failed to create fiveFile %s: %v", fiveFile, err)
 		}
 		defer logo5out.Close()
+	} else {
+		fmt.Fprintf(rep, "File for 5' splice logo not provided - will not produce 5' Splice logo .fasta\n")
 	}
 
-	readFile := fmt.Sprintf("%v%v", outPath, readName)
-	readOut, err := os.Create(readFile)
-	if err != nil {
-		log.Fatalf("failed to create readOut %s: %v", readFile, err)
+	if readName != "" {
+		fmt.Fprintf(rep, "File for read record provided - will report all L1 relative read information in %s\n", readName)
+		readFile := fmt.Sprintf("%v%v", outPath, readName)
+		readOut, err = os.Create(readFile)
+		if err != nil {
+			log.Fatalf("failed to create readOut %s: %v", readFile, err)
+		}
+		defer readOut.Close()
+	} else {
+		fmt.Fprintf(rep, "File for read record not provided - will not produce L1 relative read information\n")
 	}
-	defer readOut.Close()
 
-	readSumFile := fmt.Sprintf("%v%v", outPath, readSumName)
-	readSum, err := os.Create(readSumFile)
-	if err != nil {
-		log.Fatalf("failed to create readSum %s: %v", readSumFile, err)
+	if readSumName != "" {
+		fmt.Fprintf(rep, "File for read summary record provided - will create L1 read summary in %s\n", readSumName)
+		readSumFile := fmt.Sprintf("%v%v", outPath, readSumName)
+		readSum, err = os.Create(readSumFile)
+		if err != nil {
+			log.Fatalf("failed to create readSum %s: %v", readSumFile, err)
+		}
+		defer readSum.Close()
+	} else {
+		fmt.Fprintf(rep, "File for read summary not provided - will not produce L1 relative read information\n")
 	}
-	defer readSum.Close()
 
 	// read SJ data
 	SpJu3, err := os.Open(SJMap3)
@@ -188,7 +223,7 @@ func main() {
 		count++
 	}
 
-	fmt.Println("Loading genome")
+	fmt.Fprintln(rep, "Loading genome")
 	gen, err := os.Open(genome)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v.", err)
@@ -205,7 +240,7 @@ func main() {
 
 		AllSeqs[s.Name()] = s
 	}
-	fmt.Println("Genome loaded")
+	fmt.Fprintln(rep, "Genome loaded")
 
 	//// Commence reading
 
@@ -250,7 +285,7 @@ func main() {
 				continue
 			}
 			numRead++
-			fmt.Printf("Read: %v, \t %v: Coords: %v-%v\n", r.Name, numRead, r.Start(), r.End())
+			fmt.Printf("Overlaping read: %v, \t %v: Coords: %v-%v\n", r.Name, numRead, r.Start(), r.End())
 
 			var (
 				startInL1 int
@@ -292,35 +327,33 @@ func main() {
 					countSplice = true
 					if gapLen > 4 {
 
+						// genomic position of gap in read
 						genStartGap := startGap + f.Start()
 						genEndGap := endGap + f.Start()
 
+						// genomic position of splice junction
 						genStartSJ := genStartGap - 2
 						genEndSJ := genEndGap - 2
 
+						// Reading the nucleotides of the SJ in string form
 						var buffer5 bytes.Buffer
 						for i := genStartSJ; i < genStartSJ+4; i++ {
 							buffer5.WriteString(string(AllSeqs[f.Chrom].At(i).L))
 						}
-						sFiveSJ := buffer5.String()
+						sFiveSJ := strings.ToUpper(buffer5.String())
 
 						var buffer3 bytes.Buffer
 						for i := genEndSJ; i < genEndSJ+2; i++ {
 							buffer3.WriteString(string(AllSeqs[f.Chrom].At(i).L))
 						}
-						sThreeSJ := buffer3.String()
+						sThreeSJ := strings.ToUpper(buffer3.String())
 
+						// Look SJ nucs up in maps
 						fiveSJ := All5SJ[sFiveSJ]
 						threeSJ := All3SJ[sThreeSJ]
-						fmt.Println("The 5' class:", All5SJ[sFiveSJ], "Proof:", fiveSJ)
+
+						fmt.Println("The 5' class:", All5SJ[sFiveSJ], "Proof:", sFiveSJ)
 						fmt.Println("The 3' class:", All3SJ[sThreeSJ], "Proof:", sThreeSJ)
-
-						// retained only if weblogo or full intron  is wanted
-						nucs := AllSeqs[f.Chrom].Slice()
-						// fiveSJ := nucs.Slice(genStartGap-2, genStartGap+2)
-						// threeSJ := nucs.Slice(genEndGap-2, genEndGap+1)
-
-						// fmt.Printf("5': %v \t 3': %v\n", fiveSJ, threeSJ)
 
 						fmt.Fprintf(out, "%v \t%v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v\n",
 							r.Name,    // read name
@@ -337,22 +370,28 @@ func main() {
 						)
 
 						// Include only if there is need for an intron
-						fmt.Fprintf(seqOut, "%v \t%v \t %v \t %v \n",
-							f.Chrom,   // chromosome of L1
-							f.Start(), // L1 genomic start
-							f.End(),   // L1 genomic end
-							startGap,  // start position of gap relative to L1
-							endGap,    // end position of gap relative to L1
-							nucs.Slice(genStartGap-3, genEndGap+3), //
-						)
-						// if logo5Name != "" {
-						// 	fmt.Fprintf(logo5out, ">Logo-5'%v:%v-%v\n%v\n",
-						// 		f.Chrom,  // chromosome name
-						// 		startGap, // start position of gap relative to L1
-						// 		endGap,   // end position of gap relative to L1
-						// 		sFiveSJ,  // letters at begin of splice
-						// 	)
-						// }
+						if seqOutName != "" {
+							nucs := AllSeqs[f.Chrom].Slice()
+
+							fmt.Fprintf(seqOut, "%v \t%v \t %v \t %v \t %v \t %v \n",
+								f.Chrom,   // chromosome of L1
+								f.Start(), // L1 genomic start
+								f.End(),   // L1 genomic end
+								startGap,  // start position of gap relative to L1
+								endGap,    // end position of gap relative to L1
+								nucs.Slice(genStartGap-3, genEndGap+3), //
+							)
+						}
+
+						// splice logo fasta files
+						if logo5Name != "" {
+							fmt.Fprintf(logo5out, ">Logo-5'%v:%v-%v\n%v\n",
+								f.Chrom,  // chromosome name
+								startGap, // start position of gap relative to L1
+								endGap,   // end position of gap relative to L1
+								sFiveSJ,  // letters at begin of splice
+							)
+						}
 
 						if logo3Name != "" {
 							fmt.Fprintf(logo3out, ">Logo-3'%v:%v-%v\n%v\n",
@@ -367,16 +406,19 @@ func main() {
 				}
 			}
 
-			fmt.Fprintf(readOut, "%v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \n",
-				f.Chrom,   // Chromosome of L1
-				f.Start(), // Start position of L1
-				f.End(),   // End position of L1
-				startInL1, // Start position of read relative to L1
-				endInL1,   // End position of read relative to L1
-				r.Start(), // Start position of read relative to chromosome
-				r.End(),   // End position of read relative to chromosome
-				r.Cigar,   // Cigar string
-			)
+			if readName != "" {
+				fmt.Fprintf(readOut, "%v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \n",
+					f.Chrom,   // Chromosome of L1
+					f.Start(), // Start position of L1
+					f.End(),   // End position of L1
+					startInL1, // Start position of read relative to L1
+					endInL1,   // End position of read relative to L1
+					r.Start(), // Start position of read relative to chromosome
+					r.End(),   // End position of read relative to chromosome
+					r.Cigar,   // Cigar string
+				)
+			}
+			// Count number of spliced reads
 			if countSplice {
 				cSplice++
 			}
@@ -390,24 +432,26 @@ func main() {
 			numSplice++
 		}
 
-		fmt.Printf("There were %v reads for that L1 (%v - %v)(%v were spliced)\n", numRead, f.Start(), f.End(), cSplice)
-		var pSplice float64
-		pSplice = (float64(cSplice) / float64(numRead)) * 100.00
-		fmt.Fprintf(readSum, "%v \t %v \t %v \t %v \t %v \t %v \t %.2f \n", // FIX ME
-			f.Chrom,         // Chromosome of L1
-			f.Start(),       // Start position of L1
-			f.End(),         // End position of L1
-			numRead,         // number of reads for that L1
-			cSplice,         // number of spliced reads
-			numRead-cSplice, // number of non-ggspliced reads
-			pSplice,         // proportion spliced
-		)
+		// Only print summary file of L1s which have at least a read mapped to them.
+		if numRead > 0 {
+			var pSplice float64
+			pSplice = (float64(cSplice) / float64(numRead)) * 100.00
+			fmt.Fprintf(readSum, "%v \t %v \t %v \t %v \t %v \t %v \t %.2f \n",
+				f.Chrom,         // Chromosome of L1
+				f.Start(),       // Start position of L1
+				f.End(),         // End position of L1
+				numRead,         // number of reads for that L1
+				cSplice,         // number of spliced reads
+				numRead-cSplice, // number of non-ggspliced reads
+				pSplice,         // proportion spliced
+			)
+		}
 	}
 	err = fsc.Error()
 	if err != nil {
 		log.Fatalf("bed scan failed: %v", err)
 	}
-	fmt.Printf("There were %v intervals with at least one spliced read\n", numSplice)
+	fmt.Fprintf(rep, "There were %v intervals with at least one spliced read\n", numSplice)
 }
 
 func overlaps(r *sam.Record, f feat.Feature) bool {
