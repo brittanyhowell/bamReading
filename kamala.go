@@ -25,6 +25,7 @@ import (
 
 var (
 	report      string
+	fSplice     bool
 	index       string
 	bamFile     string
 	bedFile     string
@@ -259,7 +260,7 @@ func main() {
 		f := fsc.Feat().(*bed.Bed3)
 		fmt.Printf("\nL1: %v - %v\n", f.Start(), f.End())
 
-		fSplice := false // if element has a spliced read in it, it becomes positive
+		fSplice = false // if element has a spliced read in it, it becomes positive
 		countSplice := false
 
 		// set chunks
@@ -405,9 +406,10 @@ func main() {
 					extra = gapLen // adds to overlap
 				}
 			}
-
+			// total reads file
 			if readName != "" {
-				fmt.Fprintf(readOut, "%v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \n",
+				fmt.Fprintf(readOut, "%v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \n",
+					r.Name,    // name of read
 					f.Chrom,   // Chromosome of L1
 					f.Start(), // Start position of L1
 					f.End(),   // End position of L1
@@ -429,6 +431,7 @@ func main() {
 			log.Fatal(err)
 		}
 		if fSplice {
+			fmt.Println("going up")
 			numSplice++
 		}
 
@@ -447,6 +450,7 @@ func main() {
 			)
 		}
 	}
+
 	err = fsc.Error()
 	if err != nil {
 		log.Fatalf("bed scan failed: %v", err)
