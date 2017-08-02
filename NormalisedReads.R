@@ -1,6 +1,6 @@
 
 
-setwd("~/Documents/University/Honours_2016/Project/Data/readData/testing")
+setwd("~/Documents/University/Honours_2016/Project/Data/readData/humanSJnucTest/")
 # load required libraries
 library(IRanges)
 library(ggplot2)
@@ -9,7 +9,7 @@ library(ggplot2)
 ### Summary reads section
 
   # summary reads table
-  reads <- read.table(file = "gapsIn24h_1mg_R2.STAR.5.25.bam_readSummary.txt")
+  reads <- read.table(file = "gapsIn24h_1mg_R2_readSummary.txt")
   colnames(reads) <- c("chromosome", "cStart", "cEnd", "numReads", "numSpliced", "numNonSpliced", "pSpliced") 
   
   percentSpliced <- reads$pSpliced
@@ -23,7 +23,7 @@ library(ggplot2)
   ggplot(data=reads, aes(x= numberSplicedReads, y= reads$numNonSpliced))+#, colour = percentSpliced))+
     geom_point(shape=5) +
     # geom_smooth(method=lm) +
-    coord_cartesian(xlim= c(0,100), ylim= c(0,100)) +
+    coord_cartesian(xlim= c(0,100), ylim= c(0,100)) # +
     # scale_colour_gradientn(colours=rainbow(4))
   
   plot(x = reads$numReads, y = reads$numSpliced, xlim = c(0,1000), ylim= c(0,1000))
@@ -81,9 +81,21 @@ library(ggplot2)
   
   ## Bringin' in the split reads
   
-  splitReads <- read.table("./gapsIn24h_1mg_R2.STAR.5.25.bam.txt")
-  colnames(splitReads) <- c("ID", "chr", "cStart", "cEnd", "lStart", "lEnd", "5nucs", "3nucs", "m5nucs", "m3nucs", "gapLen", "flags")
+  splitReads <- read.table("./gapsIn24h_1mg_R2_splitReads.txt")
+  colnames(splitReads) <- c("ID", "chr", "cStart", "cEnd", "lStart", "lEnd", "class5", "class3", "gapLen", "cigar", "flags")
   
+  # subsetting data
+  newdata <- splitReads[ which(splitReads$class5=='249'), ]
+  newdata <- subset(splitReads, class5==127)
+   newdata <- splitReads[splitReads$class5  > 19 & splitReads$class5 <33,]
+  new3data <- splitReads[splitReads$class3 == 8,]
+   
+   
+  ## Subsetted
+   splitStart <- new3data$lStart
+   splitEnd <- new3data$lEnd  
+   
+  ## Not subsetted
   splitStart <- splitReads$lStart
   splitEnd <- splitReads$lEnd
   
@@ -91,6 +103,23 @@ library(ggplot2)
   splitCov <- coverage(splitIntervals)
   
   plotRanges(splitIntervals) # Oh so boxy
+  
+  # ggplot of reads
+  df <- as.data.frame(splitReads)
+  x <- df$lStart
+  xEnd <- df$lEnd
+  
+  ggplot(df) +
+    geom_segment(aes(x = x, y = 1, xend = xEnd, yend = 100, colour = df$class3), data = df)
+    
+  ## ggplot - iRanges
+  
+  bins <- disjointBins(IRanges(start(splitIntervals), end(splitIntervals) + 1))
+  dat <- cbind(as.data.frame(splitIntervals), bin = bins)
+  
+  ggplot(dat) + 
+    geom_rect(aes(xmin = start, xmax = end,
+                  ymin = bin, ymax = bin + 0.9 )) 
   
   # Coverage plot with both
   par(mfrow=c(1,1), mar=c(5,5,4,4))
@@ -126,7 +155,100 @@ mat[11]
 HCLUST <- hclust(dist(mat))
 
 
+par(mfrow=c(1,1), mar=c(5,5,4,4))
 
+## test things
+# set.seed(1)
+# N <- 100
+# library(GenomicRanges)
+# ## GRanges
+# gr <- GRanges(seqnames = 
+#                 sample(c("chr1", "chr2", "chr3"),
+#                        size = N, replace = TRUE),
+#               IRanges(
+#                 start = sample(1:300, size = N, replace = TRUE),
+#                 width = sample(70:75, size = N,replace = TRUE)),
+#               strand = sample(c("+", "-", "*"), size = N, 
+#                               replace = TRUE),
+#               value = rnorm(N, 10, 3), score = rnorm(N, 100, 30),
+#               sample = sample(c("Normal", "Tumor"), 
+#                               size = N, replace = TRUE),
+#               pair = sample(letters, size = N, 
+#                             replace = TRUE))
+# ## automatically facetting and assign y
+# ## this must mean geom_rect support GRanges object
+# ggplot(gr) + geom_rect()
+# 
 
-
-
+viewReads <- function(reads){
+  # sort by start
+  subset <- splitReads[splitReads$class3 < 5,]
+  sorted <- subset[order(subset$lStart),];
+  
+  #---
+  # In the first iteration we work out the y-axis
+  # positions that segments should be plotted on
+  # segments should be plotted on the next availible
+  # y position without merging with another segment
+  #---
+  yread <- c(); #keeps track of the x space that is used up by segments 
+  
+  # get x axis limits
+  minstart <- min(sorted$lStart);
+  maxend <- max(sorted$lEnd);
+  
+  # initialise yread
+  yread[1] <- minstart - 1;
+  ypos <- c(); #holds the y pos of the ith segment
+  
+  # for each read
+  for (r in 1:nrow(sorted)){
+    read <- sorted[r,];
+    start <- read$lStart;
+    placed <- FALSE;
+    
+    # iterate through yread to find the next availible
+    # y pos at this x pos (start)
+    y <- 1;
+    while(!placed){
+      
+      if(yread[y] < start){
+        ypos[r] <- y;
+        yread[y] <- read$lEnd;
+        placed <- TRUE;
+      } 
+      
+      # current y pos is used by another segment, increment
+      y <- y + 1;
+      # initialize another y pos if we're at the end of the list
+      if(y > length(yread)){
+        yread[y] <- minstart-1;
+      }
+    }
+  } 
+  
+  # find the maximum y pos that is used to size up the plot
+  maxy <- length(yread);
+  sorted$ypos <- ypos;
+  
+  # Now we have all the information, start the plot
+  plot.new();
+  plot.window(xlim=c(minstart, maxend+((maxend-minstart)/10)), ylim=c(1,maxy));
+  axis(3);
+  
+  #---
+  # This second iteration plots the segments using the found y pos and 
+  # the start and end values
+  #---
+  for (r in 1:nrow(sorted)){
+    read <- sorted[r,];
+    # colour dependent on strand type
+    if(read$class3 > 3){
+      color = 'yellow'
+    }else{
+      color = 'red'
+    }
+    #plot this segment!
+    segments(read$lStart, maxy-read$ypos, read$lEnd, maxy-read$ypos, col=color);
+  }
+}
