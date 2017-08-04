@@ -19,36 +19,38 @@
 ## Variables
 	# Variables for mouse:
 
-		# # Filepath variables:
-		# scriptDIR=/data/rc003/Brittany/Scripts
-		# bamDIR=/data/rc003/Brittany/Alignment/mouseBAM/normaliseRunTest
-		# outDIR=/data/rc003/Brittany/findGaps/testReadNormalise/
-		# intDIR=/data/rc003/Brittany/Data/L1Location
-		# refGenDIR=/data/rc003/Brittany/Data/genomes
+		# Filepath variables:
+		scriptDIR=/data/rc003/Brittany/Scripts/ 
+		bamDIR=/data/rc003/Brittany/Alignment/mouseBAM/normaliseRunTest
+		intDIR=/data/rc003/Brittany/Data/L1Location/ 
+		dataDIR=/data/rc003/Brittany/Data/sjMaps/
+		refGenDIR=/data/rc003/Brittany/Data/genomes/
+		outDIR=~/musNorm/
 
-		# intervalsBed="L1_mouseORF1-2-4-8kb.bed"
-		# # intervalsBed="ClusAllL1s.bed"
-
-		# refGen="mm10.fa"
+		# Non-filepath variables
+		intervalsBed="L1_Mouse_merge_sort_ORF2only-bothORF.bed"
+		refGen="mm10.fa"
+		SJMap5="SJMap5.txt"
+		SJMap3="SJMap3.txt"
 
 	
 
 	# Variables for human:
 
-		# Filepath variables:
-		scriptDIR=/data/rc003/Brittany/Scripts/ 
-		bamDIR=/data/rc003/Brittany/humanStrictAlignment/testNormalise/ 
-		intDIR=/data/rc003/Brittany/Data/L1Location/ 
-		dataDIR=/data/rc003/Brittany/Data/sjMaps/
-		refGenDIR=/data/rc003/Brittany/Data/genomes/
-		outDIR=~/humNorm2/
+		# # Filepath variables:
+		# scriptDIR=/data/rc003/Brittany/Scripts/ 
+		# bamDIR=/data/rc003/Brittany/humanStrictAlignment/testNormalise/ 
+		# intDIR=/data/rc003/Brittany/Data/L1Location/ 
+		# dataDIR=/data/rc003/Brittany/Data/sjMaps/
+		# refGenDIR=/data/rc003/Brittany/Data/genomes/
+		# outDIR=~/humNorm2/
 
-		# Non-filepath variables
-		# intervalsBed="human_L1_bothORF.bed"
-		intervalsBed="human_L1_ORF2_bothORF.bed"
-		refGen="hg38.fa"
-		SJMap5="SJMap5.txt"
-		SJMap3="SJMap3.txt"
+		# # Non-filepath variables
+		# # intervalsBed="human_L1_bothORF.bed"
+		# intervalsBed="human_L1_ORF2_bothORF.bed"
+		# refGen="hg38.fa"
+		# SJMap5="SJMap5.txt"
+		# SJMap3="SJMap3.txt"
 
 
 
@@ -57,7 +59,7 @@ cd ${bamDIR}
 	bamRecord=${1%.bai}
 	bam=${1}
 
-outPrefix="gapsIn${bamRecord%.STAR.5.25.bam}"
+outPrefix="gapsIn${bamRecord%.STAR.10.45.bam}"
 echo "Running for ${outPrefix}"
  	go run kamala.go -index=${bamDIR}/${bam} -bam=${bamDIR}/${bamRecord} -intervalsBed=${intDIR}/${intervalsBed} -outPath=${outDIR} -outName=${outPrefix}_splitReads.txt -seqOutName=${outPrefix}_FullIntron.txt -refGen=${refGenDIR}/${refGen}  -readName=${outPrefix}_reads.txt -readSumName=${outPrefix}_readSummary.txt -SJMap5=${dataDIR}/${SJMap5} -SJMap3=${dataDIR}/${SJMap3} -report=${outPrefix}_report.txt
 
