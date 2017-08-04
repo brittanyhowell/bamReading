@@ -33,7 +33,7 @@ library(ggplot2)
 ### Plotting all of the reads
   
   # all reads
-  allReads <- read.table("gapsIn24h_1mg_R2.STAR.5.25.bam_reads.txt")
+  allReads <- read.table("gapsIn24h_1mg_R2_reads.txt")
   colnames(allReads) <- c("Chr", "L1PosStart", "L1PosEnd", "lStart", "lEnd", "cStart", "cEnd", "cigar" )
   
   start = allReads$lStart
@@ -84,6 +84,56 @@ library(ggplot2)
   splitReads <- read.table("./gapsIn24h_1mg_R2_splitReads.txt")
   colnames(splitReads) <- c("ID", "chr", "cStart", "cEnd", "lStart", "lEnd", "class5", "class3", "gapLen", "cigar", "flags")
   
+  # Making frequency table
+
+  freqSplits <- splitReads[,c(5:9)]
+  dfAll <- as.data.frame(freqSplits)
+  df <- dfAll[dfAll$gapLen > 200,]
+  df <- dfAll[dfAll$class5 >16 &  dfAll$class5 < 33,]
+  library(plyr)
+  counts <- ddply(df, .(df$lStart, df$lEnd, df$gapLen, df$class5, df$class3), nrow)
+  names(counts) <- c("start", "end", "len","5'SJ", "3'SJ", "freq")
+
+  cols <- c("firebrick1", "brown1", "chocolate", "orange1", "gold1", "darkolivegreen1", "darkolivegreen4", "olivedrab1", "lightseagreen", "mediumseagreen", "paleturquoise1", "powderblue", "royalblue1", "royalblue4", "slateblue3", "slateblue1")
+  SJ3 <- c("AA", "AG", "AC", "AT", "GA", "GG", "GT", "CA", "CG", "CC", "CT", "TA", "TG", "TC", "TT")
+  
+ggplot(counts) +
+    geom_segment(aes(x = counts$start, y = counts$freq, xend = counts$end, yend = counts$freq, color = factor(counts$`3'SJ`)), size = 2, alpha=.5, data = counts) +
+    scale_y_continuous(trans = "log10", minor_breaks = seq(0, 100000, 100)) +
+     # scale_colour_brewer(palette = "Set1") +
+    labs(title = "human MCF7", x = "L1 coordinate", y = "Reads supporting gap", fill="Cat") +
+    coord_cartesian(xlim = NULL, ylim = c(10, 2500)) +
+    # scale_color_manual(values = cols ,labels=SJ3)+
+    theme(legend.title=element_blank()) 
+
+## ggplot for all reads
+
+freqReads <- allReads[,c(4:5)]
+dfRAll <- as.data.frame(freqReads)
+dfR <- dfRAll[dfRAll$gapLen > 200,]
+dfR <- dfRAll[dfRAll$class5 >16 &  dfAll$class5 < 33,]
+library(plyr)
+countsR <- ddply(dfRAll, .(dfRAll$lStart, dfRAll$lEnd ), nrow)
+names(countsR) <- c("start", "end", "freq")
+
+cols <- c("firebrick1", "brown1", "chocolate", "orange1", "gold1", "darkolivegreen1", "darkolivegreen4", "olivedrab1", "lightseagreen", "mediumseagreen", "paleturquoise1", "powderblue", "royalblue1", "royalblue4", "slateblue3", "slateblue1")
+SJ3 <- c("AA", "AG", "AC", "AT", "GA", "GG", "GT", "CA", "CG", "CC", "CT", "TA", "TG", "TC", "TT")
+
+ggplot(countsR) +
+  geom_segment(aes(x = countsR$start, y = countsR$freq, xend = countsR$end, yend = countsR$freq), size = 1, alpha=.5, data = countsR) +
+  scale_y_continuous(trans = "log10", minor_breaks = seq(0, 100000, 100)) +
+  # scale_colour_brewer(palette = "Set1") +
+  labs(title = "human MCF7 - all reads", x = "L1 coordinate", y = "Reads supporting gap", fill="Cat") +
+  coord_cartesian(xlim = NULL, ylim = c(10, 2500)) +
+  # scale_color_manual(values = cols ,labels=SJ3)+
+  theme(legend.title=element_blank()) 
+
+
+
+plot(cov, type = "l", xlim = c(0,10000)) # All reads - coverage
+  
+ 
+  
   # subsetting data
   newdata <- splitReads[ which(splitReads$class5=='249'), ]
   newdata <- subset(splitReads, class5==127)
@@ -131,11 +181,11 @@ library(ggplot2)
   
   # Combining plots (multiPanel)
   par(mfrow=c(2,1), mar=c(1,4,1,1))
-  plot(cov, type = "l", xlim = c(0,10000), xaxt = 'n', xlab = '') # All reads - coverage
+ plot(cov, type = "l", xlim = c(0,10000), xaxt = 'n', xlab = '') # All reads - coverage
   par(mar = c(4, 4, 1, 1))
   # plot(splitCov, type = "l", xlim = c(0,10000)) # Coverage
   plotRanges(splitIntervals) # Oh so boxy
-  
+
   
   ### Matrix things
   
