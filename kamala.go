@@ -356,7 +356,7 @@ func main() {
 						fmt.Println("The 5' class:", All5SJ[sFiveSJ], "Proof:", sFiveSJ)
 						fmt.Println("The 3' class:", All3SJ[sThreeSJ], "Proof:", sThreeSJ)
 
-						fmt.Fprintf(out, "%v \t%v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v\n",
+						fmt.Fprintf(out, "%v \t%v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v\n",
 							r.Name,    // read name
 							f.Chrom,   // chromosome of L1
 							f.Start(), // L1 genomic start
@@ -365,6 +365,8 @@ func main() {
 							endGap,    // end position of gap relative to L1
 							fiveSJ,    // Class of 5' SJ
 							threeSJ,   // Class of 3' SJ
+							sFiveSJ,   // 5' nucs
+							sThreeSJ,  // 3' nucs
 							gapLen,    // length of gap
 							r.Cigar,   // cigar string of read
 							r.Flags,   // flags relative to read
