@@ -16,6 +16,7 @@ import (
 )
 
 type reads struct {
+	Name       string
 	Chrom      string
 	ChromStart int
 	ChromEnd   int
@@ -23,17 +24,20 @@ type reads struct {
 	L1End      int
 	ReadStart  int
 	ReadEnd    int
+	Pos        int
 	Cigar      sam.Cigar
 }
 
 const (
-	ChromField = iota
+	NameField = iota
+	ChromField
 	ChromStartField
 	ChromEndField
 	L1StartField
 	L1EndField
 	ReadStartField
 	ReadEndField
+	PosField
 	CigarField
 )
 
@@ -45,7 +49,7 @@ var (
 func main() {
 
 	flag.StringVar(&readFile, "readFile", "", "File with read data")
-	flag.StringVar(&out, "outFile", "", "cov interval file")
+	flag.StringVar(&out, "outFile", "intervals.txt", "cov interval file")
 	flag.Parse()
 
 	o := fmt.Sprintf("%v", out)
@@ -91,29 +95,31 @@ func main() {
 			// startGap  int
 			// endGap    int
 
-			intLen int
-			// overlap     int
+			intLen  int
+			overlap int
 			// extra       int
 			// readOverlap int
 		)
 		for _, co := range c.Cigar {
-			pos := c.ReadStart
+			pos := c.Pos
 
 			t := co.Type()
 			con := t.Consumes()
 			intLen = co.Len() * con.Reference
 
 			if con.Query == con.Reference {
-				// o := min(pos+intLen, r.End()) - max(pos, r.Start())
-				// if o > 0 {
-				// overlap += o
-				// }
-				fmt.Println("con stuff:", con.Query, con.Reference)
+				o := min(pos+intLen, c.ReadEnd) - max(pos, c.ReadStart)
+				if o > 0 {
+					overlap += o
+				}
+				fmt.Println("con stuff:", overlap)
 			}
 			// 	overlap += extra
 			// 	extra = 0
 			// fmt.Fprintf(oFile, "%v\t%v", start, end?)
-			fmt.Println(intLen, pos)
+			fmt.Println("Operator: ", co)
+			// BRITTANY: Write to file if SAM field says I map.
+			// No map? continue. SIMPLE IF STATEMENT. DONESZO.
 		}
 
 		// block = append(block, c)
@@ -139,6 +145,7 @@ func parseReadFile(line []byte) (b reads, err error) {
 	}
 
 	b = reads{
+		Name:       string(c[NameField]),
 		Chrom:      string(c[ChromField]),
 		ChromStart: mustAtoi(c[ChromStartField], ChromStartField),
 		ChromEnd:   mustAtoi(c[ChromEndField], ChromEndField),
@@ -146,6 +153,7 @@ func parseReadFile(line []byte) (b reads, err error) {
 		L1End:      mustAtoi(c[L1EndField], L1EndField),
 		ReadStart:  mustAtoi(c[ReadStartField], ReadStartField),
 		ReadEnd:    mustAtoi(c[ReadEndField], ReadEndField),
+		Pos:        mustAtoi(c[PosField], PosField),
 		Cigar:      mustCigar(c[CigarField], CigarField),
 	}
 	return
