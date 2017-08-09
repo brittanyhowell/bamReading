@@ -356,7 +356,7 @@ func main() {
 						fmt.Println("The 5' class:", All5SJ[sFiveSJ], "Proof:", sFiveSJ)
 						fmt.Println("The 3' class:", All3SJ[sThreeSJ], "Proof:", sThreeSJ)
 
-						fmt.Fprintf(out, "%v \t%v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v\n",
+						fmt.Fprintf(out, "%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n",
 							r.Name,    // read name
 							f.Chrom,   // chromosome of L1
 							f.Start(), // L1 genomic start
@@ -376,7 +376,7 @@ func main() {
 						if seqOutName != "" {
 							nucs := AllSeqs[f.Chrom].Slice()
 
-							fmt.Fprintf(seqOut, "%v \t%v \t %v \t %v \t %v \t %v \n",
+							fmt.Fprintf(seqOut, "%v\t%v\t%v\t%v\t%v\t%v\n",
 								f.Chrom,   // chromosome of L1
 								f.Start(), // L1 genomic start
 								f.End(),   // L1 genomic end
@@ -410,7 +410,7 @@ func main() {
 			}
 			// total reads file
 			if readName != "" {
-				fmt.Fprintf(readOut, "%v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \t %v \n",
+				fmt.Fprintf(readOut, "%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n",
 					r.Name,    // name of read
 					f.Chrom,   // Chromosome of L1
 					f.Start(), // Start position of L1
@@ -419,6 +419,7 @@ func main() {
 					endInL1,   // End position of read relative to L1
 					r.Start(), // Start position of read relative to chromosome
 					r.End(),   // End position of read relative to chromosome
+					r.Pos,     // First mapping base
 					r.Cigar,   // Cigar string
 				)
 			}
