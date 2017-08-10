@@ -322,7 +322,7 @@ func main() {
 				endGap = startInL1 + overlap + gapLen
 
 				switch co.Type() {
-				case sam.CigarSkipped, sam.CigarInsertion:
+				case sam.CigarSkipped, sam.CigarDeletion:
 
 					fSplice = true
 					countSplice = true
