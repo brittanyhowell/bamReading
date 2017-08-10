@@ -95,33 +95,76 @@ func main() {
 			// startGap  int
 			// endGap    int
 
-			intLen  int
-			overlap int
-			// extra       int
-			// readOverlap int
+			refLen     int
+			overlap    int
+			extra      int
+			refOverlap int
 		)
+		pos := c.Pos
 		for _, co := range c.Cigar {
-			pos := c.Pos
+			fmt.Println()
+			fmt.Println("The operator:", co, ", L1 position", pos-c.ChromStart)
+
+			fmt.Println("chrom (ref) pos:", pos)
 
 			t := co.Type()
 			con := t.Consumes()
-			intLen = co.Len() * con.Reference
+			coLen := co.Len()
+			refLen = co.Len() * con.Reference
 
 			if con.Query == con.Reference {
-				o := min(pos+intLen, c.ReadEnd) - max(pos, c.ReadStart)
+				o := min(pos+refLen, c.ReadEnd) - max(pos, c.ReadStart)
 				if o > 0 {
 					overlap += o
-				}
-				fmt.Println("con stuff:", overlap)
-			}
-			// 	overlap += extra
-			// 	extra = 0
-			// fmt.Fprintf(oFile, "%v\t%v", start, end?)
-			fmt.Println("Operator: ", co)
-			// BRITTANY: Write to file if SAM field says I map.
-			// No map? continue. SIMPLE IF STATEMENT. DONESZO.
-		}
+					refOverlap += o
 
+					// totOverlap += o
+				}
+			} else if con.Reference == 1 {
+				extra += coLen
+				fmt.Println("adding extra to ref", extra)
+				refOverlap += extra
+				extra = 0
+			} else if con.Query == 1 {
+				extra += coLen
+				fmt.Println("adding extra to read", extra)
+				overlap += extra
+				extra = 0
+			}
+
+			fmt.Println("Read overlap:", overlap, ", ref overlap:", refOverlap)
+
+			switch co.Type() {
+			case sam.CigarMatch, sam.CigarEqual:
+
+				startMap := pos - c.ChromStart
+				endMap := startMap + refLen
+				otherEnd := c.L1Start + refOverlap
+
+				if endMap != otherEnd {
+					fmt.Println("There is a mapping issue and you've counted wrong. Revisit the consume bit")
+					os.Exit(0)
+				}
+
+				fmt.Fprintf(oFile, "%v\t%v\t%v\t%v\t%v\n",
+					c.Chrom,
+					c.ChromStart,
+					c.ChromEnd,
+					startMap,
+					endMap,
+				)
+
+				// 	overlap += extra
+				// 	extra = 0
+				// fmt.Fprintf(oFile, "%v\t%v", start, end?)
+				// fmt.Println("Operator: ", co)
+				// BRITTANY: Write to file if SAM field says I map.
+				// No map? continue. SIMPLE IF STATEMENT. DONESZO.
+			}
+			pos += refLen
+			fmt.Println("new pos:", pos)
+
+		}
 		// block = append(block, c)
 
 	}
