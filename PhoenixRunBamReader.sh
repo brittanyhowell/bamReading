@@ -19,38 +19,38 @@
 ## Variables
 	# Variables for mouse:
 
-		# # Filepath variables:
-		# scriptDIR=/data/rc003/Brittany/Scripts/ 
-		# bamDIR=/data/rc003/Brittany/Alignment/mouseBAM/normaliseRunTest
-		# intDIR=/data/rc003/Brittany/Data/L1Location/ 
-		# dataDIR=/data/rc003/Brittany/Data/sjMaps/
-		# refGenDIR=/data/rc003/Brittany/Data/genomes/
-		# outDIR=~/musNorm/
+		# Filepath variables:
+		scriptDIR=/data/rc003/Brittany/Scripts/ 
+		bamDIR=/data/rc003/Brittany/Alignment/mouseBAM/normaliseRunTest
+		intDIR=/data/rc003/Brittany/Data/L1Location/ 
+		dataDIR=/data/rc003/Brittany/Data/sjMaps/
+		refGenDIR=/data/rc003/Brittany/Data/genomes/
+		outDIR=~/musNorm/
 
-		# # Non-filepath variables
-		# intervalsBed="L1_Mouse_merge_sort_ORF2only-bothORF.bed"
-		# refGen="mm10.fa"
-		# SJMap5="SJMap5.txt"
-		# SJMap3="SJMap3.txt"
+		# Non-filepath variables
+		intervalsBed="L1_Mouse_merge_sort_ORF2only-bothORF.bed"
+		refGen="mm10.fa"
+		SJMap5="SJMap5.txt"
+		SJMap3="SJMap3.txt"
 
 	
 
 	# Variables for human:
 
-		# Filepath variables:
-		scriptDIR=/data/rc003/Brittany/Scripts/ 
-		bamDIR=/data/rc003/Brittany/humanAlignment
-		intDIR=/data/rc003/Brittany/Data/L1Location/ 
-		dataDIR=/data/rc003/Brittany/Data/sjMaps/
-		refGenDIR=/data/rc003/Brittany/Data/genomes/
-		outDIR=~/humNormC/
+		# # Filepath variables:
+		# scriptDIR=/data/rc003/Brittany/Scripts/ 
+		# bamDIR=/data/rc003/Brittany/humanAlignment
+		# intDIR=/data/rc003/Brittany/Data/L1Location/ 
+		# dataDIR=/data/rc003/Brittany/Data/sjMaps/
+		# refGenDIR=/data/rc003/Brittany/Data/genomes/
+		# outDIR=~/humNormC/
 
-		# Non-filepath variables
-		# intervalsBed="human_L1_bothORF.bed"
-		intervalsBed="human_L1_ORF2_bothORF.bed"
-		refGen="hg38.fa"
-		SJMap5="SJMap5.txt"
-		SJMap3="SJMap3.txt"
+		# # Non-filepath variables
+		# # intervalsBed="human_L1_bothORF.bed"
+		# intervalsBed="human_L1_ORF2_bothORF.bed"
+		# refGen="hg38.fa"
+		# SJMap5="SJMap5.txt"
+		# SJMap3="SJMap3.txt"
 
 
 

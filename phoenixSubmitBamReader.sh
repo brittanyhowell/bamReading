@@ -1,6 +1,6 @@
 ##submits many bamReader.go scripts
 
-bamDIR=/data/rc003/Brittany/humanAlignment
+bamDIR=/data/rc003/Brittany/Alignment/mouseBAM/normaliseRunTest
 scriptDIR=/data/rc003/Brittany/Scripts
 
 cd ${scriptDIR}
