@@ -3,13 +3,16 @@
 setwd("~/Documents/University/Honours_2016/Project/Data/readData/humanSJnucTest/")
 setwd("~/Documents/University/Honours_2016/Project/Data/readData/mouse/")
 setwd("~/Documents/University/Honours_2016/Project/Data/readData/mouseSJTest/")
+setwd("~/Documents/University/Honours_2016/Project/Data/readData/mouseSam/")
+setwd("~/Documents/University/Honours_2016/Project/Data/readData/humC//")
 # load required libraries
 library(IRanges)
 library(ggplot2)
 
 
 # covONLY section
-reads <- read.table(file = "Ints.txt")
+reads <- read.table(file = "intervals.txt")
+reads <- read.table(file = "INTNOT154529005.txt")
 colnames(reads) <- c("chr", "LStart", "LEnd", "mapStart", "mapEnd")
 
 start <- reads$mapStart
@@ -27,7 +30,8 @@ ggplot(dat) +
   geom_rect(aes(xmin = start, xmax = end,
                 ymin = bin, ymax = bin + 0.9 )) 
 
-
+# ALTERNATE PLOT
+plot(cov, type = "l", main = "All read coverage - human", xlab = "L1 coordinate", ylab = "number of reads")
 
 ### Summary reads section
 chrX <- read.table(file = "chrXread.txt")
@@ -66,6 +70,7 @@ colnames(chrX) <-
   # all reads
   sallReads <- read.table("../humanSJnucTest/gapsIn24h_1mg_R2_reads.txt")
   sallReads <- read.table("../humanSJnucTest/gapsIn24h_1mg_R2_splitReads.txt")
+  sallReads <- read.table("not154529005.txt")
   sallReads <- read.table("gapsInMut-F2-Rep1_CGTACG_L007_reads.txt")
   splitMouse <- read.table("gapsInMut-F2-Rep1_CGTACG_L007_splitReads.txt")
   colnames(splitMouse) <-c("ID", "chr", "cStart", "cEnd", "lStart", "lEnd", "class5", "class3","Nclass5", "Nclass3", "gapLen", "cigar", "flags")
@@ -124,7 +129,7 @@ colnames(chrX) <-
    # axis(2)
   
   # Plot coverage - all reads
-  plot(cov, type = "l", main = "mouse coverage", xlab = "L1 coordinate", ylab = "mapped section reads")
+  plot(cov, type = "l", main = "All read coverage - mouse", xlab = "L1 coordinate", ylab = "number of reads")
   # ggplot(data = intervals) # THIS DOES NOT DO ANYTHING :/
   
   
@@ -132,9 +137,28 @@ colnames(chrX) <-
   ## Bringin' in the split reads
   
   splitReads <- read.table("./gapsIn24h_1mg_R2_splitReads.txt")
+  splitReads <- read.table("splitIsNot154529005.txt")
   splitReads <- read.table("gapsInMut-F2-Rep1_CGTACG_L007_splitReads.txt")
   colnames(splitReads) <- c("ID", "chr", "cStart", "cEnd", "lStart", "lEnd", "class5", "class3", "gapLen", "cigar", "flags")
   colnames(splitReads) <- c("ID", "chr", "cStart", "cEnd", "lStart", "lEnd", "class5", "class3","Nclass5", "Nclass3", "gapLen", "cigar", "flags")
+  
+  
+  ## Box ggPLOT
+  splitStart <- splitReads$lStart
+  splitEnd <- splitReads$lEnd
+  
+  splitIntervals  <- IRanges(start = splitStart, end = splitEnd)
+  
+  ## ggplot - iRanges
+  
+  bins <- disjointBins(IRanges(start(splitIntervals), end(splitIntervals) + 1))
+  dat <- cbind(as.data.frame(splitIntervals), bin = bins)
+  
+  ggplot(dat) + 
+    geom_rect(aes(xmin = start, xmax = end,
+                  ymin = bin, ymax = bin + 0.9 ))+
+  labs(title = "mouse 10:45", x = "L1 coordinate", y = "Reads supporting gap", fill="Cat") 
+  
   
   # Making frequency table
 
@@ -149,12 +173,14 @@ colnames(chrX) <-
   cols <- c("firebrick1", "brown1", "chocolate", "orange1", "gold1", "darkolivegreen1", "darkolivegreen4", "olivedrab1", "lightseagreen", "mediumseagreen", "paleturquoise1", "powderblue", "royalblue1", "royalblue4", "slateblue3", "slateblue1")
   SJ3 <- c("AA", "AG", "AC", "AT", "GA", "GG", "GT", "CA", "CG", "CC", "CT", "TA", "TG", "TC", "TT")
   
+  number_ticks <- function(n) {function(limits) pretty(limits, n)}
+  
 ggplot(counts) +
     geom_segment(aes(x = counts$start, y = counts$freq, xend = counts$end, yend = counts$freq, color = factor(counts$`3'SJ`)), size = 2, alpha=.5, data = counts) +
-    # scale_y_continuous(trans = "log10", minor_breaks = seq(0, 100000, 100)) +
+    scale_y_continuous(trans = "log10", minor_breaks = seq(0, 1000, 10), breaks=number_ticks(5)) +
      # scale_colour_brewer(palette = "Set1") +
-    labs(title = "mouse 10:45", x = "L1 coordinate", y = "Reads supporting gap", fill="Cat") +
-    # coord_cartesian(xlim = NULL, ylim = c(10, 2500)) +
+    labs(title = "human MCF7", x = "L1 coordinate", y = "Reads supporting gap", fill="Cat") +
+ coord_cartesian(xlim = NULL, ylim = c(20, 600)) +
     # scale_color_manual(values = cols ,labels=SJ3)+
     theme(legend.title=element_blank()) 
 
@@ -203,6 +229,8 @@ ggplot(countsR) +
   splitEnd <- splitReads$lEnd
   
   splitIntervals  <- IRanges(start = splitStart, end = splitEnd)
+  
+
   splitCov <- coverage(splitIntervals)
   
   plotRanges(splitIntervals) # Oh so boxy
