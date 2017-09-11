@@ -260,8 +260,8 @@ func main() {
 		f := fsc.Feat().(*bed.Bed3)
 		fmt.Printf("\nL1: %v - %v\n", f.Start(), f.End())
 
-		fSplice = false // if element has a spliced read in it, it becomes positive
-		countSplice := false
+		fSplice = false      // if element has a spliced read in it, it becomes positive
+		countSplice := false // if read is spliced, count it
 
 		// set chunks
 		chunks, err := bai.Chunks(refs[f.Chrom], f.Start(), f.End())
@@ -353,9 +353,6 @@ func main() {
 						fiveSJ := All5SJ[sFiveSJ]
 						threeSJ := All3SJ[sThreeSJ]
 
-						fmt.Println("The 5' class:", All5SJ[sFiveSJ], "Proof:", sFiveSJ)
-						fmt.Println("The 3' class:", All3SJ[sThreeSJ], "Proof:", sThreeSJ)
-
 						fmt.Fprintf(out, "%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n",
 							r.Name,    // read name
 							f.Chrom,   // chromosome of L1
@@ -434,7 +431,7 @@ func main() {
 			log.Fatal(err)
 		}
 		if fSplice {
-			fmt.Println("going up")
+			fmt.Println("spliced: ", numSplice+1)
 			numSplice++
 		}
 
@@ -448,7 +445,7 @@ func main() {
 				f.End(),         // End position of L1
 				numRead,         // number of reads for that L1
 				cSplice,         // number of spliced reads
-				numRead-cSplice, // number of non-ggspliced reads
+				numRead-cSplice, // number of non-spliced reads
 				pSplice,         // proportion spliced
 			)
 		}
