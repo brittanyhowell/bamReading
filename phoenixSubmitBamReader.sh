@@ -1,10 +1,27 @@
-##submits many bamReader.go scripts
+##submits many kamala.go scripts
 
-bamDIR=/data/rc003/Brittany/Alignment/mouseBAM/normaliseRunTest
-scriptDIR=/data/rc003/Brittany/Scripts
+
+# Source folders
+bamDIR=/fast/users/a1646948/data/bam/human1045
+scriptDIR=/fast/users/a1646948/scripts
+
+# Out folder (make it the same name as the bam for consistency)
+NAME="human1045"
+outDIR=/fast/users/a1646948/gapTables/${NAME}
+
+# Check BED folder exists, if not, make it
+	if [ -d $outDIR ]; then
+		rm -r $outDIR 
+		mkdir $outDIR
+		echo "OUT folder exists... replacing"  
+	else 
+		echo "creating OUT folder"  
+		mkdir $outDIR
+	fi 
 
 cd ${scriptDIR}
-cp runBamReader.sh ${bamDIR}
+# cp runKamala.sh ${bamDIR}
+cp hrunKamala.sh ${bamDIR}
 cp kamala.go ${bamDIR}
 cd ${bamDIR}
 
@@ -13,6 +30,6 @@ bamList=$(ls *.bam.bai)
 for bam in $bamList ; do
 
 	echo "Running for $bam"
-				# scriptDIR=/data/rc003/Brittany/Scripts  bamDIR=/data/rc003/Brittany/humanStrictAlignment/testNormalise  intDIR=/data/rc003/Brittany/Data/L1Location  refGenDIR=/data/rc003/Brittany/Data/genomes outDIR=~/humNorm2/ dataDIR=/data/rc003/Brittany/Data/ sbatch runBamReader.sh ${bam}
-				scriptDIR=/data/rc003/Brittany/Scripts/  bamDIR=/data/rc003/Brittany/Alignment/mouseBAM/normaliseRunTest intDIR=/data/rc003/Brittany/Data/L1Location/  dataDIR=/data/rc003/Brittany/Data/sjMaps/ refGenDIR=/data/rc003/Brittany/Data/ sbatch runBamReader.sh ${bam}
+						scriptDIR=/fast/users/a1646948/scripts bamDIR=/fast/users/a1646948/data/bam/human1045 intDIR=/fast/users/a1646948/data/L1Location dataDIR=/fast/users/a1646948/data/SJMaps refGenDIR=/fast/users/a1646948/data/genomes outDIR=/fast/users/a1646948/gapTables/human1045/ sbatch hrunKamala.sh ${bam}
+				# scriptDIR=/fast/users/a1646948/scripts bamDIR=/fast/users/a1646948/data/bam/mouse1045 intDIR=/fast/users/a1646948/data/L1Location dataDIR=/fast/users/a1646948/data/SJMaps refGenDIR=/fast/users/a1646948/data/genomes outDIR=/fast/users/a1646948/gapTables/mouse1045/ sbatch runKamala.sh ${bam}
 done

@@ -10,6 +10,7 @@ import (
 	"os"
 	"runtime"
 	"strconv"
+
 	"unsafe"
 
 	"github.com/biogo/hts/sam"

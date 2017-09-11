@@ -19,38 +19,38 @@
 ## Variables
 	# Variables for mouse:
 
-		# Filepath variables:
-		scriptDIR=/data/rc003/Brittany/Scripts/ 
-		bamDIR=/data/rc003/Brittany/Alignment/mouseBAM/normaliseRunTest
-		intDIR=/data/rc003/Brittany/Data/L1Location/ 
-		dataDIR=/data/rc003/Brittany/Data/sjMaps/
-		refGenDIR=/data/rc003/Brittany/Data/genomes/
-		outDIR=~/musNorm/
+		# # Filepath variables:
+		# scriptDIR=/fast/users/a1646948/scripts
+		# bamDIR=/fast/users/a1646948/data/bam/mouse1045
+		# intDIR=/fast/users/a1646948/data/L1Location
+		# dataDIR=/fast/users/a1646948/data/SJMaps
+		# refGenDIR=/fast/users/a1646948/data/genomes
+		# outDIR=/fast/users/a1646948/gapTables/mouse1045/
 
-		# Non-filepath variables
-		intervalsBed="L1_Mouse_merge_sort_ORF2only-bothORF.bed"
-		refGen="mm10.fa"
-		SJMap5="SJMap5.txt"
-		SJMap3="SJMap3.txt"
+		# # Non-filepath variables
+		# intervalsBed="L1_Mouse_merge_sort_ORF2only-bothORF.bed"
+		# refGen="mm10.fa"
+		# SJMap5="SJMap5.txt"
+		# SJMap3="SJMap3.txt"
 
 	
 
 	# Variables for human:
 
-		# # Filepath variables:
-		# scriptDIR=/data/rc003/Brittany/Scripts/ 
-		# bamDIR=/data/rc003/Brittany/humanAlignment
-		# intDIR=/data/rc003/Brittany/Data/L1Location/ 
-		# dataDIR=/data/rc003/Brittany/Data/sjMaps/
-		# refGenDIR=/data/rc003/Brittany/Data/genomes/
-		# outDIR=~/humNormC/
+		# Filepath variables:
+		scriptDIR=/fast/users/a1646948/scripts
+		bamDIR=/fast/users/a1646948/data/bam/human1045
+		intDIR=/fast/users/a1646948/data/L1Location
+		dataDIR=/fast/users/a1646948/data/SJMaps
+		refGenDIR=/fast/users/a1646948/data/genomes
+		outDIR=/fast/users/a1646948/gapTables/human1045/
 
-		# # Non-filepath variables
-		# # intervalsBed="human_L1_bothORF.bed"
-		# intervalsBed="human_L1_ORF2_bothORF.bed"
-		# refGen="hg38.fa"
-		# SJMap5="SJMap5.txt"
-		# SJMap3="SJMap3.txt"
+		# Non-filepath variables
+		# intervalsBed="human_L1_bothORF.bed"
+		intervalsBed="human_L1_ORF2_bothORF.bed"
+		refGen="hg38.fa"
+		SJMap5="SJMap5.txt"
+		SJMap3="SJMap3.txt"
 
 
 
@@ -65,3 +65,12 @@ echo "Running for ${outPrefix}"
 
 
 echo "Complete table"
+
+touch "runDetails.txt"
+
+	echo "intervalsBed=human_L1_ORF2_bothORF.bed" >> runDetails.txt
+	echo "refGen=hg38.fa" >> runDetails.txt
+	echo "SJMap5=SJMap5.txt" >> runDetails.txt
+	echo "SJMap3=SJMap3.txt" >> runDetails.txt		
+
+mv runDetails.txt ${outDIR}
